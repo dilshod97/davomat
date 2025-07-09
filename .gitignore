@@ -1,0 +1,10 @@
+*.pyc
+__pycache__/
+*.sqlite3
+.venv
+*.log
+.vscode/
+.idea/
+*.py[cod]
+staticfiles/
+media/
