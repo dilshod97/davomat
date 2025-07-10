@@ -13,10 +13,6 @@ services:
       "
     ports:
       - "3012:8000"
-    volumes:
-      - .:/app
-      - /var/www/risk/storage:/app/storage
-      - /var/www/risk/static:/app/static
     env_file:
       - .env
     environment:
