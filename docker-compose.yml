@@ -28,6 +28,7 @@ services:
     command: python3 bot/run.py
     volumes:
       - .:/app
+      - ./staticfiles:/app/staticfiles
     env_file:
       - .env
     environment:
