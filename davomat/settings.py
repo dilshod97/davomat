@@ -57,7 +57,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'davomat.urls'
 CORS_ALLOW_ALL_ORIGINS = True
-
+CSRF_TRUSTED_ORIGINS = [
+    "*",
+]
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
