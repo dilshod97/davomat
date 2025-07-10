@@ -28,7 +28,7 @@ def webapp_button(user):
         inline_keyboard=[
             [InlineKeyboardButton(
                 text="📋 Davomatni kiritish",
-                web_app=WebAppInfo(url=f"https://davomat-dev.netlify.app/?token={generate_simplejwt_token(user)}")  # <-- Web App URL
+                web_app=WebAppInfo(url=f"https://t.me/hpdavomatbot?startapp={generate_simplejwt_token(user)}")  # <-- Web App URL
             )]
         ]
     )
