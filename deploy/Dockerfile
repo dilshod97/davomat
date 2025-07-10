@@ -1,6 +1,6 @@
 FROM python:3.10
 
-WORKDIR /app/
+WORKDIR /
 
 RUN apt-get update && apt-get install -y gettext
 
