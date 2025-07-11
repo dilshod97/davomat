@@ -2,6 +2,7 @@ from rest_framework import viewsets
 from ..models import Task, Attendance
 from .serializers import TaskSerializer, AttendanceSerializer
 from rest_framework.permissions import IsAuthenticated
+from datetime import date
 
 
 class TaskViewSet(viewsets.ModelViewSet):
@@ -13,7 +14,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     def get_queryset(self):
-        return Task.objects.filter(user=self.request.user)
+        return Task.objects.filter(user=self.request.user, end_date__gte=date.today())
 
 
 class AttendanceViewSet(viewsets.ModelViewSet):
