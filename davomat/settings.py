@@ -61,7 +61,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
-    "https://dwebbapp.masofaviyaudit.uz", "https://davomat-dev.netlify.app/"
+    "https://dwebapp.masofaviyaudit.uz", "https://davomat-dev.netlify.app/"
 ]
 TEMPLATES = [
     {
