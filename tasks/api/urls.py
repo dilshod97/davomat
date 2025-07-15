@@ -5,10 +5,11 @@ from .views import TaskViewSet, AttendanceViewSet, RegionListAPIView, DistrictLi
 router = DefaultRouter()
 router.register(r'tasks', TaskViewSet, basename='task')
 router.register(r'attendance', AttendanceViewSet, basename='attendance')
-router.register(r'region', RegionListAPIView, basename='region')
-router.register(r'district', DistrictListAPIView, basename='district')
-router.register(r'ministry', MinistryTreeListAPIView, basename='ministry')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('region/', RegionListAPIView.as_view(), name='region-list'),
+    path('district/', DistrictListAPIView.as_view(), name='district-list'),
+    path('ministry/', MinistryTreeListAPIView.as_view(), name='ministry-list'),
+
 ]
