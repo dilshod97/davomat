@@ -90,7 +90,7 @@ DATABASES = {
         'NAME': 'dwebapp',
         'USER': 'db_admin',
         'PASSWORD': 'Qaz!2#$%^7',
-        'HOST': '92.168.1.8',
+        'HOST': '192.168.1.8',
         'PORT': 5432,
         'CONN_MAX_AGE': 36000,
         'OPTIONS': {
