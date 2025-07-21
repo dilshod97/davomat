@@ -73,10 +73,13 @@ class DistrictListAPIView(generics.ListAPIView):
     def get_queryset(self):
         queryset = super().get_queryset()
         name = self.request.query_params.get('name')
+        region_id = self.request.query_params.get('region_id')
         if name:
             queryset = queryset.filter(
                 Q(name_uz__icontains=name) |
                 Q(name_ru__icontains=name) |
                 Q(name_cr__icontains=name)
             )
+        if region_id:
+            queryset = queryset.filter(region_id=int(region_id))
         return queryset
