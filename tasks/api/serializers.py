@@ -63,3 +63,11 @@ class AttendanceSerializer(serializers.ModelSerializer):
         attendance = Attendance.objects.create(**validated_data)
         attendance.task.set(tasks)
         return attendance
+
+
+class LastAttendanceSerializer(serializers.ModelSerializer):
+    task = TaskSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Attendance
+        fields = ['id', 'user', 'latitude', 'longitude', 'task', 'task_description', 'timestamp', 'created_at']

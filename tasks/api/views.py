@@ -1,6 +1,8 @@
 from rest_framework import viewsets
+from rest_framework.views import APIView
 from ..models import Task, Attendance, MinistryTree, District, Region
-from .serializers import TaskSerializer, AttendanceSerializer, RegionSerializer, DistrictSerializer
+from .serializers import (TaskSerializer, AttendanceSerializer, RegionSerializer, DistrictSerializer,
+                          LastAttendanceSerializer)
 from rest_framework.permissions import IsAuthenticated
 from datetime import date
 from rest_framework import generics
@@ -88,3 +90,14 @@ class DistrictListAPIView(generics.ListAPIView):
         if region_id:
             queryset = queryset.filter(region_id=int(region_id))
         return queryset
+
+
+class LastAttendanceView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        attendance = Attendance.objects.filter(user=request.user).order_by('-timestamp').first()
+        if attendance:
+            serializer = LastAttendanceSerializer(attendance)
+            return Response(serializer.data)
+        return Response({'detail': 'Attendance not found'}, status=404)

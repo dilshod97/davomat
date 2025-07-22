@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import TaskViewSet, AttendanceViewSet, RegionListAPIView, DistrictListAPIView, MinistryTreeListAPIView
+from .views import (TaskViewSet, AttendanceViewSet, RegionListAPIView, DistrictListAPIView, MinistryTreeListAPIView,
+                    LastAttendanceView)
 
 router = DefaultRouter()
 router.register(r'tasks', TaskViewSet, basename='task')
@@ -11,5 +12,6 @@ urlpatterns = [
     path('region/', RegionListAPIView.as_view(), name='region-list'),
     path('district/', DistrictListAPIView.as_view(), name='district-list'),
     path('ministry/', MinistryTreeListAPIView.as_view(), name='ministry-list'),
+    path('last-attendance/', LastAttendanceView.as_view(), name='last-attendance'),
 
 ]
