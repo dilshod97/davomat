@@ -43,8 +43,10 @@ class Task(models.Model):
     ministry = models.ForeignKey(MinistryTree, on_delete=models.DO_NOTHING, related_name='task', null=True)
     region = models.ForeignKey(Region, on_delete=models.DO_NOTHING, related_name='task', null=True)
     district = models.ForeignKey(District, on_delete=models.DO_NOTHING, related_name='task', null=True)
-    start_date = models.DateField()
-    end_date = models.DateField()
+    start_date = models.DateField(null=True)
+    end_date = models.DateField(null=True)
+    is_deleted = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 

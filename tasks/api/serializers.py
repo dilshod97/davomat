@@ -23,23 +23,31 @@ class DistrictSerializer(serializers.ModelSerializer):
 class TaskSerializer(serializers.ModelSerializer):
     region = RegionSerializer(read_only=True)
     region_id = serializers.PrimaryKeyRelatedField(
-        queryset=Region.objects.all(), write_only=True, source='region'
+        queryset=Region.objects.all(), write_only=True, source='region', required=False, allow_null=True
     )
 
     district = DistrictSerializer(read_only=True)
     district_id = serializers.PrimaryKeyRelatedField(
-        queryset=District.objects.all(), write_only=True, source='district'
+        queryset=District.objects.all(), write_only=True, source='district', required=False, allow_null=True
     )
+
     ministry = MinistryTreeSerializer(read_only=True)
     ministry_id = serializers.PrimaryKeyRelatedField(
-        queryset=MinistryTree.objects.all(), write_only=True, source='ministry'
+        queryset=MinistryTree.objects.all(), write_only=True, source='ministry', required=False, allow_null=True
     )
+
+    start_date = serializers.DateField(required=False, allow_null=True)
+    end_date = serializers.DateField(required=False, allow_null=True)
+
+    is_active = serializers.BooleanField(required=False)
 
     class Meta:
         model = Task
-        fields = ['id', 'task', 'start_date', 'end_date', 'created_at',
-                  'region', 'region_id', 'district', 'district_id', 'ministry', 'ministry_id']
-        read_only_fields = ['user']
+        fields = [
+            'id', 'task', 'start_date', 'end_date', 'created_at',
+            'region', 'region_id', 'district', 'district_id', 'ministry', 'ministry_id', 'is_active'
+        ]
+        read_only_fields = ['user', 'created_at']
 
 
 class AttendanceSerializer(serializers.ModelSerializer):
@@ -53,5 +61,5 @@ class AttendanceSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         tasks = validated_data.pop('task', [])
         attendance = Attendance.objects.create(**validated_data)
-        attendance.task.set(tasks)  # ManyToMany bog'lash
+        attendance.task.set(tasks)
         return attendance
