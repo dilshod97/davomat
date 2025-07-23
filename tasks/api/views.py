@@ -97,7 +97,7 @@ class LastAttendanceView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        attendance = Attendance.objects.filter(user=request.user).order_by('-timestamp').first()
+        attendance = Attendance.objects.filter(user=request.user).order_by('-created_at').first()
         if attendance:
             serializer = LastAttendanceSerializer(attendance)
             return Response(serializer.data)
