@@ -7,14 +7,22 @@ from .serializers import (TaskSerializer, AttendanceSerializer, RegionSerializer
 from rest_framework.permissions import IsAuthenticated
 from datetime import date
 from rest_framework import generics
+from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 from .serializers import MinistryTreeSerializer
+
+
+class ReportPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = ReportPagination
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -32,6 +40,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = ReportPagination
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -43,6 +52,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 class MinistryTreeListAPIView(generics.ListAPIView):
     queryset = MinistryTree.objects.all()
     serializer_class = MinistryTreeSerializer
+    pagination_class = ReportPagination
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -60,6 +70,7 @@ class MinistryTreeListAPIView(generics.ListAPIView):
 class RegionListAPIView(generics.ListAPIView):
     queryset = Region.objects.all()
     serializer_class = RegionSerializer
+    pagination_class = ReportPagination
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -77,6 +88,7 @@ class RegionListAPIView(generics.ListAPIView):
 class DistrictListAPIView(generics.ListAPIView):
     queryset = District.objects.all()
     serializer_class = DistrictSerializer
+    pagination_class = ReportPagination
 
     def get_queryset(self):
         queryset = super().get_queryset()
