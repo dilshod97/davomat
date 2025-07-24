@@ -28,7 +28,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     def get_queryset(self):
-        return (Task.objects.filter(user=self.request.user).
+        return (Task.objects.filter(user=self.request.user, is_deleted=False).
                 filter(Q(end_date__gte=date.today()) | (Q(end_date__isnull=True) & Q(is_active=True))))
 
     def perform_destroy(self, instance):
