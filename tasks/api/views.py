@@ -28,6 +28,8 @@ class TaskViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     def get_queryset(self):
+        if self.request.GET.get('all'):
+            return Task.objects.filter(user=self.request.user, is_deleted=False)
         return (Task.objects.filter(user=self.request.user, is_deleted=False).
                 filter(Q(end_date__gte=date.today()) | (Q(end_date__isnull=True) & Q(is_active=True))))
 
@@ -63,7 +65,7 @@ class MinistryTreeListAPIView(generics.ListAPIView):
                 Q(soha__icontains=name) |
                 Q(katta_otasi__icontains=name) |
                 Q(daraja__icontains=name)
-            )
+            ).order_by('name')
         return queryset
 
 
@@ -81,7 +83,7 @@ class RegionListAPIView(generics.ListAPIView):
                 Q(name_ru__icontains=name) |
                 Q(name_cr__icontains=name) |
                 Q(name_en__icontains=name)
-            )
+            ).order_by('name_uz')
         return queryset
 
 
