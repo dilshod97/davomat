@@ -29,9 +29,9 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         if self.request.GET.get('all'):
-            return Task.objects.filter(user=self.request.user, is_deleted=False)
+            return Task.objects.filter(user=self.request.user, is_deleted=False).order_by('-created_at')
         return (Task.objects.filter(user=self.request.user, is_deleted=False).
-                filter(Q(end_date__gte=date.today()) | (Q(end_date__isnull=True) & Q(is_active=True))))
+                filter(Q(end_date__gte=date.today()) | (Q(end_date__isnull=True) & Q(is_active=True)))).order_by('-created_at')
 
     def perform_destroy(self, instance):
         instance.is_deleted = True
@@ -48,7 +48,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     def get_queryset(self):
-        return Attendance.objects.filter(user=self.request.user)
+        return Attendance.objects.filter(user=self.request.user).order_by('-created_at')
 
 
 class MinistryTreeListAPIView(generics.ListAPIView):
@@ -83,8 +83,8 @@ class RegionListAPIView(generics.ListAPIView):
                 Q(name_ru__icontains=name) |
                 Q(name_cr__icontains=name) |
                 Q(name_en__icontains=name)
-            ).order_by('name_uz')
-        return queryset
+            )
+        return queryset.order_by('name_uz')
 
 
 class DistrictListAPIView(generics.ListAPIView):
