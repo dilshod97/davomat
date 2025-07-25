@@ -28,6 +28,9 @@ class TaskViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     def get_queryset(self):
+        base_qs = Task.objects.filter(user=self.request.user)
+        if self.action == 'destroy':
+            return base_qs
         if self.request.GET.get('all'):
             return Task.objects.filter(user=self.request.user, is_deleted=False).order_by('-created_at')
         return (Task.objects.filter(user=self.request.user, is_deleted=False).
