@@ -15,7 +15,7 @@ def generate_simplejwt_token(user):
 def contact_request_kb():
     return ReplyKeyboardMarkup(
         keyboard=[
-            [KeyboardButton(text="📲 Telefon raqamni yuborish", request_contact=True)]
+            [KeyboardButton(text="📲 Телефон рақамни юбориш", request_contact=True)]
         ],
         resize_keyboard=True,
         one_time_keyboard=True
@@ -27,7 +27,7 @@ def webapp_button(user):
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(
-                text="📋 Davomatni kiritish",
+                text="📋 Давоматни киритиш",
                 web_app=WebAppInfo(url=f"https://davomat-dev.netlify.app/?token={generate_simplejwt_token(user)}")  # <-- Web App URL
             )]
         ]
@@ -57,9 +57,9 @@ def attach_telegram_id(user, telegram_id):
 async def start_handler(message: Message):
     user = await get_user_by_telegram_id(message.from_user.id)
     if user:
-        await message.answer("✅ Siz tizimdasiz!", reply_markup=webapp_button(user))
+        await message.answer("✅ Сиз тизимдасиз!", reply_markup=webapp_button(user))
     else:
-        await message.answer("📱 Iltimos, telefon raqamingizni yuboring:", reply_markup=contact_request_kb())
+        await message.answer("📱 Илтимос, телефон рақамингизни юборинг:", reply_markup=contact_request_kb())
 
 
 @router.message(F.contact)
@@ -70,6 +70,6 @@ async def contact_handler(message: Message):
     user = await get_user_by_phone(phone)
     if user:
         await attach_telegram_id(user, message.from_user.id)
-        await message.answer("✅ Raqamingiz tasdiqlandi!", reply_markup=webapp_button(user))
+        await message.answer("✅ Рақамингиз тасдиқланди!", reply_markup=webapp_button(user))
     else:
-        await message.answer("❌ Siz ro‘yxatdan o‘tmagansiz.\nIltimos, admin bilan bog‘laning.")
+        await message.answer("❌ Сиз рўйхатдан ўтмагансиз.\nИлтимос, админ билан боғланинг.")
