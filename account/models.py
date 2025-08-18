@@ -25,6 +25,8 @@ class User(AbstractUser):
     lavozim = models.CharField(max_length=150, blank=True, null=True)
     profiles = models.TextField(null=True)
     phone = models.CharField(max_length=150, blank=False, null=False, default=0)
+    home_phone = models.CharField(max_length=150, blank=False, null=False, default=0)
+    extra_phone = models.CharField(max_length=150, blank=False, null=False, default=0)
     chat_id = models.BigIntegerField(default=0, null=True)
     img = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True)

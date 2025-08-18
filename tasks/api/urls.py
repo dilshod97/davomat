@@ -1,11 +1,14 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (TaskViewSet, AttendanceViewSet, RegionListAPIView, DistrictListAPIView, MinistryTreeListAPIView,
-                    LastAttendanceView)
+                    LastAttendanceView, ReminderViewSet, NewsViewSet, NewsMediaViewSet)
 
 router = DefaultRouter()
 router.register(r'tasks', TaskViewSet, basename='task')
 router.register(r'attendance', AttendanceViewSet, basename='attendance')
+router.register(r"news", NewsViewSet, basename="news")
+router.register(r"news-media", NewsMediaViewSet, basename="newsmedia")
+router.register(r"reminders", ReminderViewSet, basename="reminder")
 
 urlpatterns = [
     path('', include(router.urls)),

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from ..models import Task, Attendance, Region, District, MinistryTree
+from ..models import Task, Attendance, Region, District, MinistryTree, NewsMedia, News, Reminder
 
 
 class MinistryTreeSerializer(serializers.ModelSerializer):
@@ -75,3 +75,23 @@ class LastAttendanceSerializer(serializers.ModelSerializer):
     def get_task(self, obj):
         tasks = obj.task.filter(is_deleted=False)
         return TaskSerializer(tasks, many=True).data
+
+
+class NewsMediaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NewsMedia
+        fields = ["id", "media_type", "file", "url"]
+
+
+class NewsSerializer(serializers.ModelSerializer):
+    media = NewsMediaSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = News
+        fields = ["id", "document_type", "title", "summary", "link", "media", "created_at", "updated_at"]
+
+
+class ReminderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Reminder
+        fields = "__all__"

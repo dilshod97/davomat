@@ -9,6 +9,6 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'id', 'username', 'first_name', 'last_name', 'middle_name', 'birth_date',
-            'phone', 'chat_id', 'img', 'organization', 'position', 'lavozim',
+            'phone',  'home_phone', 'extra_phone', 'chat_id', 'img', 'organization', 'position', 'lavozim',
             'sector', 'sector_name', 'profiles'
         )

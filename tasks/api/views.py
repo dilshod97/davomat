@@ -1,9 +1,9 @@
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from ..models import Task, Attendance, MinistryTree, District, Region
+from ..models import Task, Attendance, MinistryTree, District, Region, News, NewsMedia, Reminder
 from .serializers import (TaskSerializer, AttendanceSerializer, RegionSerializer, DistrictSerializer,
-                          LastAttendanceSerializer)
+                          LastAttendanceSerializer, NewsSerializer, NewsMediaSerializer, ReminderSerializer)
 from rest_framework.permissions import IsAuthenticated
 from datetime import date
 from rest_framework import generics
@@ -119,3 +119,18 @@ class LastAttendanceView(APIView):
             serializer = LastAttendanceSerializer(attendance)
             return Response(serializer.data)
         return Response({'detail': 'Attendance not found'}, status=404)
+
+
+class NewsViewSet(viewsets.ModelViewSet):
+    queryset = News.objects.all()
+    serializer_class = NewsSerializer
+
+
+class NewsMediaViewSet(viewsets.ModelViewSet):
+    queryset = NewsMedia.objects.all()
+    serializer_class = NewsMediaSerializer
+
+
+class ReminderViewSet(viewsets.ModelViewSet):
+    queryset = Reminder.objects.all()
+    serializer_class = ReminderSerializer
