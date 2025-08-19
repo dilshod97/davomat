@@ -1,5 +1,19 @@
 from rest_framework import serializers
-from ..models import Task, Attendance, Region, District, MinistryTree, NewsMedia, News, Reminder
+from ..models import Task, Attendance, Region, District, MinistryTree, NewsMedia, News, Reminder, Distance
+import math
+
+
+def haversine(lat1, lon1, lat2, lon2):
+    R = 6371000
+    phi1 = math.radians(lat1)
+    phi2 = math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlambda = math.radians(lon2 - lon1)
+
+    a = math.sin(dphi/2)**2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda/2)**2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+    return R * c
 
 
 class MinistryTreeSerializer(serializers.ModelSerializer):
@@ -61,6 +75,16 @@ class AttendanceSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         tasks = validated_data.pop('task', [])
         attendance = Attendance.objects.create(**validated_data)
+
+        for i in tasks:
+            ministry_lat = i.ministry.latitude
+            ministry_lng = i.ministry.longitude
+
+            user_lat = attendance.latitude
+            user_lng = attendance.longitude
+            distance = haversine(user_lat, user_lng, ministry_lat, ministry_lng)
+            Distance.objects.create(attendance=attendance, distance=distance)
+
         attendance.task.set(tasks)
         return attendance
 
