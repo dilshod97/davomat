@@ -77,13 +77,14 @@ class AttendanceSerializer(serializers.ModelSerializer):
         attendance = Attendance.objects.create(**validated_data)
 
         for i in tasks:
-            ministry_lat = i.ministry.latitude
-            ministry_lng = i.ministry.longitude
-            if ministry_lng and ministry_lat:
-                user_lat = attendance.latitude
-                user_lng = attendance.longitude
-                distance = haversine(user_lat, user_lng, ministry_lat, ministry_lng)
-                Distance.objects.create(attendance=attendance, distance=distance)
+            if i.ministry:
+                ministry_lat = i.ministry.latitude
+                ministry_lng = i.ministry.longitude
+                if ministry_lng and ministry_lat:
+                    user_lat = attendance.latitude
+                    user_lng = attendance.longitude
+                    distance = haversine(user_lat, user_lng, ministry_lat, ministry_lng)
+                    Distance.objects.create(attendance=attendance, distance=distance)
 
         attendance.task.set(tasks)
         return attendance
