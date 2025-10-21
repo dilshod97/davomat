@@ -36,9 +36,9 @@ class DistrictSerializer(serializers.ModelSerializer):
 
 class TaskDetailSerializer(serializers.ModelSerializer):
     ministry = serializers.CharField(source='ministry.name', read_only=True)
-    region = serializers.CharField(source='region.name', read_only=True)
-    district = serializers.CharField(source='district.name', read_only=True)
-    user = serializers.CharField(source='user.username', read_only=True)
+    region = serializers.CharField(source='region.name_uz', read_only=True)
+    district = serializers.CharField(source='district.name_uz', read_only=True)
+    user = serializers.CharField(source='user.first_name', read_only=True)
 
     class Meta:
         model = Task
