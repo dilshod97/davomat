@@ -2,9 +2,10 @@ from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from ..models import Task, Attendance, MinistryTree, District, Region, News, NewsMedia, Reminder
-from .serializers import (TaskSerializer, AttendanceSerializer, RegionSerializer, DistrictSerializer,
+from .serializers import (TaskSerializer, AttendanceSerializer, AttendanceDetailSerializer, RegionSerializer, DistrictSerializer,
                           LastAttendanceSerializer, NewsSerializer, NewsMediaSerializer, ReminderSerializer)
 from rest_framework.permissions import IsAuthenticated
+from django.db.models import Max
 from datetime import date
 from rest_framework import generics
 from rest_framework.pagination import PageNumberPagination
@@ -47,11 +48,28 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     pagination_class = ReportPagination
 
+    def get_serializer_class(self):
+        if self.request.method in ['GET']:
+            return AttendanceDetailSerializer
+        return AttendanceSerializer
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
     def get_queryset(self):
-        return Attendance.objects.filter(user=self.request.user).order_by('-created_at')
+        user = self.request.user
+        subquery = (
+            Attendance.objects.filter(user=user)
+            .values('user', 'created_at__date')
+            .annotate(last_created=Max('created_at'))
+        )
+
+        last_records = Attendance.objects.filter(
+            user=user,
+            created_at__in=[item['last_created'] for item in subquery]
+        ).order_by('-created_at')
+
+        return last_records
 
 
 class MinistryTreeListAPIView(generics.ListAPIView):

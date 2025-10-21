@@ -34,6 +34,35 @@ class DistrictSerializer(serializers.ModelSerializer):
         fields = ['id', 'name_uz', 'name_ru', 'name_cr', 'pid', 'region']
 
 
+class TaskDetailSerializer(serializers.ModelSerializer):
+    ministry = serializers.CharField(source='ministry.name', read_only=True)
+    region = serializers.CharField(source='region.name', read_only=True)
+    district = serializers.CharField(source='district.name', read_only=True)
+    user = serializers.CharField(source='user.username', read_only=True)
+
+    class Meta:
+        model = Task
+        fields = [
+            'id', 'user', 'task', 'ministry', 'region', 'district',
+            'start_date', 'end_date', 'is_deleted', 'is_active', 'created_at'
+        ]
+
+
+class AttendanceDetailSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source='user.username', read_only=True)
+    task = TaskDetailSerializer(many=True, read_only=True)  # ManyToMany
+    task_ids = serializers.PrimaryKeyRelatedField(
+        queryset=Task.objects.all(), many=True, write_only=True, required=False
+    )
+
+    class Meta:
+        model = Attendance
+        fields = [
+            'id', 'user', 'latitude', 'longitude', 'task', 'task_ids',
+            'task_description', 'timestamp', 'created_at'
+        ]
+
+
 class TaskSerializer(serializers.ModelSerializer):
     region = RegionSerializer(read_only=True)
     region_id = serializers.PrimaryKeyRelatedField(
