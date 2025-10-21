@@ -14,6 +14,7 @@ from ..models import Attendance, Task
 
 class DailyReportView(APIView):
     permission_classes = [IsAuthenticated]
+
     def get(self, request):
         is_excel = request.query_params.get("is_excel", "false").lower() == "true"
         day = request.query_params.get("day")  # masalan: 2025-10-20
@@ -26,7 +27,20 @@ class DailyReportView(APIView):
         except ValueError:
             return Response({"error": "Сана формати нотўғри. Масалан: 2025-10-20"}, status=400)
 
-        all_users = User.objects.all()
+        user = request.user
+
+        if user.as_user == 0:
+            all_users = User.objects.filter(id=user.id)
+        elif user.as_user == 1:
+            if user.sector_id:
+                all_users = User.objects.filter(sector_id=user.sector_id)
+            else:
+                return Response({"error": "Foydalanuvchi sektorga biriktirilmagan."}, status=400)
+        elif user.as_user == 2:
+            all_users = User.objects.all()
+
+        else:
+            return Response({"error": "as_user noto‘g‘ri qiymatga ega."}, status=400)
 
         latest_attendance = Attendance.objects.filter(
             user=OuterRef("pk"), created_at__date=day_obj
@@ -114,6 +128,7 @@ class DailyReportView(APIView):
 
 class PeriodReportView(APIView):
     permission_classes = [IsAuthenticated]
+
     def get(self, request):
         is_excel = request.query_params.get("is_excel", "false").lower() == "true"
         start_date = request.query_params.get("start_date")
@@ -147,7 +162,20 @@ class PeriodReportView(APIView):
             "tibbiy_korik_idora",
         ]
 
-        all_users = User.objects.all()
+        user = request.user
+
+        if user.as_user == 0:
+            all_users = User.objects.filter(id=user.id)
+        elif user.as_user == 1:
+            if user.sector_id:
+                all_users = User.objects.filter(sector_id=user.sector_id)
+            else:
+                return Response({"error": "Foydalanuvchi sektorga biriktirilmagan."}, status=400)
+        elif user.as_user == 2:
+            all_users = User.objects.all()
+
+        else:
+            return Response({"error": "as_user noto‘g‘ri qiymatga ega."}, status=400)
         data = []
 
         for user in all_users:
@@ -240,10 +268,6 @@ class PeriodReportView(APIView):
 
 class BandlikHisobotAPIView(APIView):
     permission_classes = [IsAuthenticated]
-    """
-    Хисоб палатаси ходимларининг бандлиги юзасидан жамланма маълумот
-    (3-hisobot shakli)
-    """
 
     def get(self, request):
         day = request.query_params.get("day")
@@ -260,7 +284,6 @@ class BandlikHisobotAPIView(APIView):
         start = make_aware(datetime.combine(day_obj, datetime.min.time()))
         end = make_aware(datetime.combine(day_obj, datetime.max.time()))
 
-        # 🔹 Task description bo‘yicha guruhlash
         queryset = (
             Attendance.objects
             .filter(timestamp__range=[start, end])
