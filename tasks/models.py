@@ -4,7 +4,7 @@ from account.models import User
 
 class MinistryTree(models.Model):
     name = models.CharField(max_length=512, null=True)
-    parent = models.ForeignKey('MinistryTree', on_delete=models.DO_NOTHING, related_name='children', null=True)
+    parent = models.ForeignKey('MinistryTree', on_delete=models.DO_NOTHING, related_name='children', null=True, blank=True)
     inn = models.CharField(max_length=150, null=False, unique=True)
     soha = models.CharField(max_length=512, null=False)
     katta_otasi = models.CharField(max_length=150, null=True)

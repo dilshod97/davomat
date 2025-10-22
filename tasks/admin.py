@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from django.utils import timezone
+from django import forms
 from .models import (
     MinistryTree,
     Region,
@@ -14,11 +15,24 @@ from .models import (
 )
 
 
-# ---------------------------
-# MinistryTree
-# ---------------------------
+class MinistryTreeForm(forms.ModelForm):
+    class Meta:
+        model = MinistryTree
+        fields = '__all__'
+
+    class Media:
+        css = {
+            'all': ('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',)
+        }
+        js = (
+            'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+            '/static/js/map_picker.js',  # biz quyida yozamiz
+        )
+
+
 @admin.register(MinistryTree)
 class MinistryTreeAdmin(admin.ModelAdmin):
+    form = MinistryTreeForm
     list_display = (
         "id", "name", "inn", "soha", "daraja", "katta_otasi", "status", "parent"
     )
