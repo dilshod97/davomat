@@ -11,6 +11,7 @@ from rest_framework import generics
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 from .serializers import MinistryTreeSerializer
+from django.utils.dateparse import parse_date
 
 
 class ReportPagination(PageNumberPagination):
@@ -58,18 +59,41 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        start_date = self.request.query_params.get("start_date")
+        end_date = self.request.query_params.get("end_date")
+        task_description = self.request.query_params.get("task_description")
+
         subquery = (
             Attendance.objects.filter(user=user)
             .values('user', 'created_at__date')
             .annotate(last_created=Max('created_at'))
         )
 
-        last_records = Attendance.objects.filter(
+        queryset = Attendance.objects.filter(
             user=user,
             created_at__in=[item['last_created'] for item in subquery]
         ).order_by('-created_at')
 
-        return last_records
+        if start_date and end_date:
+            queryset = queryset.filter(
+                created_at__date__range=[parse_date(start_date), parse_date(end_date)]
+            )
+
+        elif start_date:
+            queryset = queryset.filter(
+                created_at__date__gte=parse_date(start_date)
+            )
+
+        elif end_date:
+            queryset = queryset.filter(
+                created_at__date__lte=parse_date(end_date)
+            )
+        if task_description:
+            queryset = queryset.filter(
+                task_description=task_description
+            )
+
+        return queryset
 
 
 class MinistryTreeListAPIView(generics.ListAPIView):
