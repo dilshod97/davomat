@@ -22,13 +22,18 @@ class MinistryTreeForm(forms.ModelForm):
 
     class Media:
         css = {
-            'all': ('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',)
+            'all': (
+                'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+                'https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css',
+                'https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css',
+            )
         }
         js = (
             'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
-            '/static/js/map_picker.js',  # biz quyida yozamiz
+            'https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js',
+            'https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js',
+            '/static/js/map_picker.js',
         )
-
 
 @admin.register(MinistryTree)
 class MinistryTreeAdmin(admin.ModelAdmin):
