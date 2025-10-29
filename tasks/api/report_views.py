@@ -10,6 +10,10 @@ from account.models import User
 from rest_framework.permissions import IsAuthenticated
 from datetime import datetime, time
 from ..models import Attendance, Task
+import requests
+
+BOT_TOKEN = "7988185659:AAHkp0AnenS5_P674Tkf47baNJ3uM3azwRU"
+BOT_API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendDocument"
 
 
 class DailyReportView(APIView):
@@ -116,12 +120,14 @@ class DailyReportView(APIView):
             wb.save(file_stream)
             file_stream.seek(0)
 
-            response = HttpResponse(
-                file_stream,
-                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            )
-            response["Content-Disposition"] = 'attachment; filename="kunlik_hisobot.xlsx"'
-            return response
+            if request.user.chat_id:  # foydalanuvchi ID bo'lsa, bot orqali yuboramiz
+                files = {'document': ('kunlik_hisobot.xlsx', file_stream,
+                                      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+                payload = {'chat_id': request.user.chat_id,
+                           'caption': f"📊 {day} учун кунлик ҳисобот"}
+                requests.post(BOT_API_URL, data=payload, files=files)
+
+            return Response({"status": True, "msg": "Fayl bot orqali yuborildi."})
 
         return Response({"kun": day, "hisobot": data})
 
@@ -252,12 +258,13 @@ class PeriodReportView(APIView):
             wb.save(file_stream)
             file_stream.seek(0)
 
-            response = HttpResponse(
-                file_stream,
-                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            )
-            response["Content-Disposition"] = 'attachment; filename="davr_hisobot.xlsx"'
-            return response
+            if request.user.chat_id:  # foydalanuvchi ID bo'lsa, bot orqali yuboramiz
+                files = {'document': ('kunlik_hisobot.xlsx', file_stream,
+                                      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+                payload = {'chat_id': request.user.chat_id, 'caption': f"📊 {start_date} - {end_date} учун кунлик ҳисобот"}
+                requests.post(BOT_API_URL, data=payload, files=files)
+
+            return Response({"status": True, "msg": "Fayl bot orqali yuborildi."})
 
         # 🔸 JSON qaytarish
         return Response({
@@ -353,12 +360,14 @@ class BandlikHisobotAPIView(APIView):
             wb.save(file_stream)
             file_stream.seek(0)
 
-            response = HttpResponse(
-                file_stream,
-                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            )
-            response["Content-Disposition"] = f'attachment; filename="bandlik_hisobot_{day}.xlsx"'
-            return response
+            if request.user.chat_id:  # foydalanuvchi ID bo'lsa, bot orqali yuboramiz
+                files = {'document': ('kunlik_hisobot.xlsx', file_stream,
+                                      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')}
+                payload = {'chat_id': request.user.chat_id,
+                           'caption': f"📊 {day} учун кунлик ҳисобот"}
+                requests.post(BOT_API_URL, data=payload, files=files)
+
+            return Response({"status": True, "msg": "Fayl bot orqali yuborildi."})
 
         # 🔹 JSON shaklida qaytarish
         return Response({
