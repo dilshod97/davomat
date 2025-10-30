@@ -39,9 +39,9 @@ class MinistryTreeForm(forms.ModelForm):
 class MinistryTreeAdmin(admin.ModelAdmin):
     form = MinistryTreeForm
     list_display = (
-        "id", "name", "inn", "soha", "daraja", "katta_otasi", "status", "parent"
+        "id", "name", "name_cr", "inn", "soha", "daraja", "katta_otasi", "status", "parent"
     )
-    search_fields = ("name", "inn", "soha", "katta_otasi")
+    search_fields = ("name", "name_cr", "inn", "soha", "katta_otasi")
     list_filter = ("status", "daraja")
     readonly_fields = ("created_at", "updated_at")
     ordering = ("name",)

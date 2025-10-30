@@ -14,6 +14,15 @@ class Sector(models.Model):
         return self.name
 
 
+from django.core.validators import RegexValidator
+from django.db import models
+
+phone_validator = RegexValidator(
+    regex=r'^998\d{9}$',
+    message="Telefon raqam 998 bilan boshlanib, jami 12 ta raqamdan iborat bo‘lishi kerak (masalan: 998935472697)."
+)
+
+
 class User(AbstractUser):
     pinfl = models.CharField(max_length=150)
     sector = models.ForeignKey(Sector, on_delete=models.DO_NOTHING, related_name='user_sector', null=True)
@@ -24,7 +33,7 @@ class User(AbstractUser):
     is_admin = models.IntegerField(default=0)
     lavozim = models.CharField(max_length=150, blank=True, null=True)
     profiles = models.TextField(null=True)
-    phone = models.CharField(max_length=150, blank=False, null=False, default=0)
+    phone = models.CharField(max_length=150, blank=False, null=False, default=0, validators=[phone_validator])
     home_phone = models.CharField(max_length=150, blank=False, null=False, default=0)
     extra_phone = models.CharField(max_length=150, blank=False, null=False, default=0)
     chat_id = models.BigIntegerField(default=0, null=True)

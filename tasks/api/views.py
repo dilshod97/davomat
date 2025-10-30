@@ -107,6 +107,7 @@ class MinistryTreeListAPIView(generics.ListAPIView):
         if name:
             queryset = queryset.filter(
                 Q(name__icontains=name) |
+                Q(name_cr__icontains=name) |
                 Q(soha__icontains=name) |
                 Q(katta_otasi__icontains=name) |
                 Q(daraja__icontains=name)
