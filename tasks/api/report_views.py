@@ -9,7 +9,7 @@ import io
 from account.models import User
 from rest_framework.permissions import IsAuthenticated
 from datetime import datetime, time
-from ..models import Attendance, Task
+from ..models import Attendance, Task, Distance
 import requests
 
 BOT_TOKEN = "7988185659:AAHkp0AnenS5_P674Tkf47baNJ3uM3azwRU"
@@ -46,10 +46,6 @@ class DailyReportView(APIView):
         else:
             return Response({"error": "as_user noto‘g‘ri qiymatga ega."}, status=400)
 
-        latest_attendance = Attendance.objects.filter(
-            user=OuterRef("pk"), created_at__date=day_obj
-        ).order_by("-created_at")
-
         data = []
 
         for user in all_users:
@@ -69,7 +65,15 @@ class DailyReportView(APIView):
                     else:
                         holat = "Ўз вақтида келди"
 
-                    if hasattr(rec, "distance") and rec.distance and rec.distance > 1000:
+                    distance = Distance.objects.filter(attendance=rec)
+
+                    other_address = False
+
+                    for i in distance:
+                        if i.distance > 1000:
+                            other_address = True
+
+                    if other_address:
                         holat = "Шубҳали (жой узоқ)"
                         izoh += " | Киритилган локация ва объект ўртасидаги масофа катта."
 
