@@ -62,15 +62,17 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         start_date = self.request.query_params.get("start_date")
         end_date = self.request.query_params.get("end_date")
         task_description = self.request.query_params.get("task_description")
+        info_type = self.request.query_params.get("task_description", "attendance")
 
         subquery = (
-            Attendance.objects.filter(user=user)
+            Attendance.objects.filter(user=user, info_type=info_type)
             .values('user', 'created_at__date')
             .annotate(last_created=Max('created_at'))
         )
 
         queryset = Attendance.objects.filter(
             user=user,
+            info_type=info_type,
             created_at__in=[item['last_created'] for item in subquery]
         ).order_by('-created_at')
 
@@ -157,7 +159,8 @@ class LastAttendanceView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        attendance = Attendance.objects.filter(user=request.user).order_by('-created_at').first()
+        info_type = request.query_params.get("info_type", "attendance")
+        attendance = Attendance.objects.filter(user=request.user, info_type=info_type).order_by('-created_at').first()
         if attendance:
             serializer = LastAttendanceSerializer(attendance)
             return Response(serializer.data)

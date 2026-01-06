@@ -54,11 +54,24 @@ class Task(models.Model):
 
 
 class Attendance(models.Model):
+    INFO_TYPE_CHOICES = (
+        ('attendance', 'Attendance'),
+        ('information', 'Information'),
+    )
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    info_type = models.CharField(
+        max_length=20,
+        choices=INFO_TYPE_CHOICES,
+        default='attendance',
+        null=True,
+        blank=True
+    )
     latitude = models.FloatField(null=True)
     longitude = models.FloatField(null=True)
     task = models.ManyToManyField(Task)
     task_description = models.TextField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
     timestamp = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
 

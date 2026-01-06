@@ -22,6 +22,7 @@ class DailyReportView(APIView):
     def get(self, request):
         is_excel = request.query_params.get("is_excel", "false").lower() == "true"
         day = request.query_params.get("day")  # masalan: 2025-10-20
+        info_type = request.query_params.get("info_type", "attendance")
 
         if not day:
             return Response({"error": "Сана киритилмади (day параметри керак)."}, status=400)
@@ -50,7 +51,7 @@ class DailyReportView(APIView):
 
         for user in all_users:
             rec = Attendance.objects.filter(
-                user=user, created_at__date=day_obj
+                user=user, created_at__date=day_obj, info_type=info_type
             ).order_by("-created_at").first()
 
             if rec:
@@ -143,6 +144,7 @@ class PeriodReportView(APIView):
         is_excel = request.query_params.get("is_excel", "false").lower() == "true"
         start_date = request.query_params.get("start_date")
         end_date = request.query_params.get("end_date")
+        info_type = request.query_params.get("info_type", "attendance")
 
         if not start_date or not end_date:
             return Response(
@@ -191,7 +193,8 @@ class PeriodReportView(APIView):
         for user in all_users:
             recs = Attendance.objects.filter(
                 user=user,
-                created_at__date__range=[start_obj, end_obj]
+                created_at__date__range=[start_obj, end_obj],
+                info_type=info_type,
             ).order_by("created_at")
 
             if recs.exists():
@@ -283,6 +286,7 @@ class BandlikHisobotAPIView(APIView):
     def get(self, request):
         day = request.query_params.get("day")
         is_excel = request.query_params.get("is_excel", "false").lower() == "true"
+        info_type = request.query_params.get("info_type", "attendance")
 
         if not day:
             return Response({"error": "day параметри талаб қилинади. Масалан: ?day=2025-10-20"}, status=400)
@@ -297,7 +301,7 @@ class BandlikHisobotAPIView(APIView):
 
         queryset = (
             Attendance.objects
-            .filter(timestamp__range=[start, end])
+            .filter(timestamp__range=[start, end], info_type=info_type)
             .annotate(
                 bandlik_turi=Case(
                     When(task_description="idora", then=Value("Идорада")),
