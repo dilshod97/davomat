@@ -47,7 +47,7 @@ def send_webapp_to_users(modeladmin, request, queryset):
 
                 await bot.send_message(
                     chat_id=u["chat_id"],
-                    text="📢 Давоматни киритиш учун тугмани босинг:",
+                    text="📢 Маълумотнома киритинг!!!",
                     reply_markup=webapp_button(user)
                 )
                 sent += 1
