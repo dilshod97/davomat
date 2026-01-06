@@ -41,7 +41,7 @@ def send_webapp_to_users(modeladmin, request, queryset):
 
             try:
                 await bot.send_message(
-                    chat_id=user.telegram_id,
+                    chat_id=user.chat_id,
                     text="📢 Маълумотнома киритинг!",
                     reply_markup=webapp_button(user)
                 )
@@ -55,7 +55,7 @@ def send_webapp_to_users(modeladmin, request, queryset):
                 await asyncio.sleep(e.retry_after)
 
             except Exception as e:
-                print(f"Xatolik {user.telegram_id}: {e}")
+                print(f"Xatolik {user.chat_id}: {e}")
 
         return sent
 
