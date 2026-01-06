@@ -34,7 +34,7 @@ def send_webapp_to_users(modeladmin, request, queryset):
     users = list(
         queryset
         .filter(is_active=True)
-        .exclude(telegram_id__isnull=True)
+        .exclude(chat_id__isnull=True)
         .values("id", "chat_id")
     )
 
