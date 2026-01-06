@@ -94,7 +94,7 @@ class DailyReportView(APIView):
                     "tasks": task_list,
                     "where_is_it": rec.task_description,
                     "description": izoh if info_type == "attendance" else rec.description,
-                    "location": f"https://yandex.com/maps/?pt={rec.latitude},{rec.longitude}&z=16&l=map"
+                    "location": f"https://yandex.com/maps/?pt={rec.longitude},{rec.latitude}&z=16&l=map"
                 })
             else:
                 # 🔹 Agar user bu kunga hech narsa kiritmagan bo‘lsa
