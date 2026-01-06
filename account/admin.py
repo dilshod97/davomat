@@ -31,18 +31,23 @@ def webapp_button(user):
 
 
 def send_webapp_to_users(modeladmin, request, queryset):
+    users = list(
+        queryset
+        .filter(is_active=True)
+        .exclude(telegram_id__isnull=True)
+        .values("id", "chat_id")
+    )
 
     async def _send():
         sent = 0
 
-        for user in queryset:
-            if not user.telegram_id:
-                continue
-
+        for u in users:
             try:
+                user = User(id=u["id"])
+
                 await bot.send_message(
-                    chat_id=user.chat_id,
-                    text="📢 Маълумотнома киритинг!",
+                    chat_id=u["chat_id"],
+                    text="📢 Давоматни киритиш учун тугмани босинг:",
                     reply_markup=webapp_button(user)
                 )
                 sent += 1
@@ -55,7 +60,7 @@ def send_webapp_to_users(modeladmin, request, queryset):
                 await asyncio.sleep(e.retry_after)
 
             except Exception as e:
-                print(f"Xatolik {user.chat_id}: {e}")
+                print(f"Xatolik {u['chat_id']}: {e}")
 
         return sent
 
