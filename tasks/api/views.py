@@ -62,7 +62,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         start_date = self.request.query_params.get("start_date")
         end_date = self.request.query_params.get("end_date")
         task_description = self.request.query_params.get("task_description")
-        info_type = self.request.query_params.get("task_description", "attendance")
+        info_type = self.request.query_params.get("info_type", "attendance")
 
         subquery = (
             Attendance.objects.filter(user=user, info_type=info_type)

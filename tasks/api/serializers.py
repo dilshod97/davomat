@@ -59,7 +59,7 @@ class AttendanceDetailSerializer(serializers.ModelSerializer):
         model = Attendance
         fields = [
             'id', 'user', 'latitude', 'longitude', 'task', 'task_ids',
-            'task_description', 'timestamp', 'created_at'
+            'task_description', 'timestamp', 'created_at', 'description', 'info_type'
         ]
 
 
