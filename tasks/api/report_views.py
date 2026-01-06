@@ -93,7 +93,7 @@ class DailyReportView(APIView):
                     "status": holat,
                     "tasks": task_list,
                     "where_is_it": rec.task_description,
-                    "description": izoh,
+                    "description": izoh if info_type == "attendance" else rec.description,
                 })
             else:
                 # 🔹 Agar user bu kunga hech narsa kiritmagan bo‘lsa
