@@ -94,6 +94,7 @@ class DailyReportView(APIView):
                     "tasks": task_list,
                     "where_is_it": rec.task_description,
                     "description": izoh if info_type == "attendance" else rec.description,
+                    "location": f"https://yandex.com/maps/?pt={rec.latitude},{rec.longitude}&z=16&l=map"
                 })
             else:
                 # 🔹 Agar user bu kunga hech narsa kiritmagan bo‘lsa
@@ -107,6 +108,7 @@ class DailyReportView(APIView):
                     "tasks": '',
                     "where_is_it": "-",
                     "description": "",
+                    "location" : ""
                 })
 
         # 🔹 Excel shaklda chiqarish
@@ -115,7 +117,7 @@ class DailyReportView(APIView):
             ws = wb.active
             ws.title = "Кунлик ҳисобот"
 
-            headers = ["Ходим", "Лавозими", "Келган вақт", "Тизим вақти", "Масофа", "Ҳолат", "Амалга оширадиган ишлари", "Қаердалиги", "Изоҳ"]
+            headers = ["Ходим", "Лавозими", "Келган вақт", "Тизим вақти", "Масофа", "Ҳолат", "Амалга оширадиган ишлари", "Қаердалиги", "Изоҳ", "Жойлашув"]
             ws.append(headers)
 
             for row in data:
