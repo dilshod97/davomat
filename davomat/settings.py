@@ -137,7 +137,7 @@ SIMPLE_JWT = {
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'Asia/Tashkent'
-USE_TZ = True
+USE_TZ = False
 
 USE_I18N = True
 
