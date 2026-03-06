@@ -1,5 +1,6 @@
 import datetime
 import requests
+import textwrap
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -89,7 +90,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     Бугунга амалга оширадиган ишларингиз:
     {work}
     """
-
+            text = textwrap.dedent(text)
             BOT_TOKEN = "7988185659:AAHkp0AnenS5_P674Tkf47baNJ3uM3azwRU"
             BOT_API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
             payload = {
