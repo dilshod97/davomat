@@ -2,6 +2,7 @@ from aiogram import Router, F
 from aiogram.types import Message, Contact
 from asgiref.sync import sync_to_async
 from account.models import User
+import re
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from rest_framework_simplejwt.tokens import AccessToken
@@ -44,7 +45,14 @@ def get_user_by_telegram_id(telegram_id):
 
 @sync_to_async
 def get_user_by_phone(phone):
-    return User.objects.filter(phone=phone).first()
+    digits = re.sub(r'\D', '', phone)
+
+    if len(digits) == 9:
+        digits = "998" + digits
+    elif digits.startswith("8") and len(digits) == 12:
+        digits = digits[1:]
+    phone = digits
+    return User.objects.filter(phone__icontains=phone).first()
 
 
 @sync_to_async
