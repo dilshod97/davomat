@@ -91,7 +91,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     """
 
             BOT_TOKEN = "7988185659:AAHkp0AnenS5_P674Tkf47baNJ3uM3azwRU"
-            BOT_API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendDocument"
+            BOT_API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
             payload = {
                 'chat_id': chat_id,
                 'text': text
