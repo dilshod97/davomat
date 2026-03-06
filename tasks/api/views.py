@@ -1,3 +1,5 @@
+import datetime
+import requests
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -55,6 +57,50 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         return AttendanceSerializer
 
     def perform_create(self, serializer):
+        try:
+            chat_id = self.request.user.chat_id
+            day = datetime.datetime.now().date()
+            rec = Attendance.objects.filter(user=self.request.user, created_at__date=day).order_by(
+                "-created_at").first()
+
+            if not rec:
+                return serializer.save(user=self.request.user)
+
+            d = {
+                "idora": "Идорада",
+                "obyekt_tashkent": "Объектда (Тошкент ш.)",
+                "obyekt_hudud": "Объектда (Ҳудуд)",
+                "tibbiy_korik_idora": "Тиббий кўрик (Идорага бораман)",
+                "tibbiy_korik_obyekt": "Тиббий кўрик (Объектга бораман)",
+                "kasal": "Касал",
+                "masofaviy": "Масофавий",
+                "taatil": "Таътил",
+                "ruxsat_olganman": "Рухсат олганман",
+            }
+
+            work = ""
+            for i, data in enumerate(rec.task.all()):
+                work += f"{i + 1}. {data.task}\n"
+
+            text = f"""
+    Ассалому алайкум.
+    Вақт: {rec.timestamp.strftime("%H:%M, %d-%m-%Y")}
+    Қаердалигингиз: {d.get(rec.task_description, "Белгисиз")}
+    Бугунга амалга оширадиган ишларингиз:
+    {work}
+    """
+
+            BOT_TOKEN = "7988185659:AAHkp0AnenS5_P674Tkf47baNJ3uM3azwRU"
+            BOT_API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendDocument"
+            payload = {
+                'chat_id': chat_id,
+                'text': text
+            }
+            requests.post(BOT_API_URL, data=payload)
+
+        except Exception as e:
+            print("Xatolik:", e)
+
         serializer.save(user=self.request.user)
 
     def get_queryset(self):
