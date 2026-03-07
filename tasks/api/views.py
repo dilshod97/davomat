@@ -58,14 +58,9 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         return AttendanceSerializer
 
     def perform_create(self, serializer):
+        obj = serializer.save(user=self.request.user)
         try:
             chat_id = self.request.user.chat_id
-            day = datetime.datetime.now().date()
-            rec = Attendance.objects.filter(user=self.request.user, created_at__date=day).order_by(
-                "-created_at").first()
-
-            if not rec:
-                return serializer.save(user=self.request.user)
 
             d = {
                 "idora": "Идорада",
@@ -80,13 +75,13 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             }
 
             work = ""
-            for i, data in enumerate(rec.task.all()):
+            for i, data in enumerate(obj.task.all()):
                 work += f"{i + 1}. {data.task}\n"
 
             text = f"""
     Ассалому алайкум.
-    Вақт: {rec.timestamp.strftime("%H:%M, %d-%m-%Y")}
-    Қаердалигингиз: {d.get(rec.task_description, "Белгисиз")}
+    Вақт: {obj.timestamp.strftime("%H:%M, %d-%m-%Y")}
+    Қаердалигингиз: {d.get(obj.task_description, "Белгисиз")}
     Бугунга амалга оширадиган ишларингиз:
     {work}
     """
@@ -101,8 +96,6 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 
         except Exception as e:
             print("Xatolik:", e)
-
-        serializer.save(user=self.request.user)
 
     def get_queryset(self):
         user = self.request.user
