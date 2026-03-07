@@ -1,4 +1,4 @@
-import datetime
+import datetime, json
 import requests
 import textwrap
 from rest_framework import viewsets
@@ -15,6 +15,12 @@ from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 from .serializers import MinistryTreeSerializer
 from django.utils.dateparse import parse_date
+from rest_framework_simplejwt.tokens import AccessToken
+
+
+def generate_simplejwt_token(user):
+    access = AccessToken.for_user(user)
+    return str(access)
 
 
 class ReportPagination(PageNumberPagination):
@@ -79,6 +85,8 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 work += f"{i + 1}. {data.task}\n"
 
             text = f"""
+    Давомат юборилди ✅.
+    
     Ассалому алайкум.
     Вақт: {obj.timestamp.strftime("%H:%M, %d-%m-%Y")}
     Қаердалигингиз: {d.get(obj.task_description, "Белгисиз")}
@@ -89,9 +97,32 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             BOT_TOKEN = "7988185659:AAHkp0AnenS5_P674Tkf47baNJ3uM3azwRU"
             BOT_API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
             payload = {
-                'chat_id': chat_id,
-                'text': text
+                "chat_id": chat_id,
+                "text": " ",
+                "reply_markup": json.dumps({
+                    "remove_keyboard": True
+                })
             }
+
+            requests.post(BOT_API_URL, data=payload)
+
+            payload = {
+                "chat_id": chat_id,
+                "text": text,
+                "reply_markup": json.dumps({
+                    "inline_keyboard": [
+                        [
+                            {
+                                "text": "📋 Давоматни киритиш",
+                                "web_app": {
+                                    "url": f"https://davomat-dev.netlify.app/?token={generate_simplejwt_token(self.request.user)}"
+                                }
+                            }
+                        ]
+                    ]
+                })
+            }
+
             requests.post(BOT_API_URL, data=payload)
 
         except Exception as e:
