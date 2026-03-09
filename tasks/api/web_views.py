@@ -206,12 +206,12 @@ class ReportView(APIView):
                     periods.append({
                         "period": d["p"],
                         "is_sunday": d["is_sunday"],
-                        "user": u.id,
+                        "user": u.username,
                         "entered": entered
                     })
 
                 member = {
-                    "user": u.id,
+                    "user": u.username,
                     "name": u.get_full_name(),
                     "pname": getattr(u, "lavozim", ""),
                     "periods": periods
