@@ -87,7 +87,9 @@ class SummaryReportView(APIView):
 
             rec = attendance_map.get(u.id)
 
-            name = u.get_full_name() if hasattr(u, "get_full_name") else str(u)
+            full_name = f"{u.first_name} {getattr(u, 'middle_name', '')} {u.last_name}".strip()
+
+            name = full_name
 
             if not rec:
                 results["not_entered"].append({
@@ -209,10 +211,10 @@ class ReportView(APIView):
                         "user": u.username,
                         "entered": entered
                     })
-
+                full_name = f"{u.first_name} {getattr(u, 'middle_name', '')} {u.last_name}".strip()
                 member = {
                     "user": u.username,
-                    "name": u.get_full_name(),
+                    "name": full_name,
                     "pname": getattr(u, "lavozim", ""),
                     "periods": periods
                 }
@@ -272,11 +274,11 @@ class ReportView(APIView):
                 work = ""
                 for i, data in enumerate(rec.task.all()):
                     work += f"{i + 1}. {data.task}\n"
-
+                full_name = f"{u.first_name} {getattr(u, 'middle_name', '')} {u.last_name}".strip()
                 member = {
                     "_id": str(rec.id),
                     "uimage": getattr(u, "image", "") or "",
-                    "fname": u.get_full_name(),
+                    "fname": full_name,
                     "pname": getattr(u, "lavozim", ""),
                     "contacts": {
                         "office": getattr(u, "office_phone", ""),
