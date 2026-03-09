@@ -86,7 +86,7 @@ class DailyReportView(APIView):
 
                 data.append({
                     "user": user.get_full_name() if hasattr(user, "get_full_name") else str(user),
-                    "position": getattr(user, "position", "-"),
+                    "position": getattr(user, "lavozim", "-"),
                     "entered_time": rec.timestamp.strftime("%Y-%m-%d %H:%M") if rec.timestamp else "-",
                     "system_time": rec.created_at.strftime("%Y-%m-%d %H:%M"),
                     "distance": f"{rec.distance} м" if hasattr(rec, "distance") and rec.distance else "-",
@@ -100,7 +100,7 @@ class DailyReportView(APIView):
                 # 🔹 Agar user bu kunga hech narsa kiritmagan bo‘lsa
                 data.append({
                     "user": user.get_full_name() if hasattr(user, "get_full_name") else str(user),
-                    "position": getattr(user, "position", "-"),
+                    "position": getattr(user, "lavozim", "-"),
                     "entered_time": "-",
                     "system_time": "-",
                     "distance": "-",
@@ -217,7 +217,7 @@ class PeriodReportView(APIView):
 
                 row = {
                     "user": user.get_full_name() if hasattr(user, "get_full_name") else str(user),
-                    "position": getattr(user, "position", "-"),
+                    "position": getattr(user, "lavozim", "-"),
                     "jami_kiritilgan": jami,
                     "kechikkanlar": kechikkanlar,
                     "shubhali_holatlar": shubhali,
@@ -230,7 +230,7 @@ class PeriodReportView(APIView):
                 # hech narsa kiritmagan foydalanuvchi
                 row = {
                     "user": user.get_full_name() if hasattr(user, "get_full_name") else str(user),
-                    "position": getattr(user, "position", "-"),
+                    "position": getattr(user, "lavozim", "-"),
                     "jami_kiritilgan": 0,
                     "kechikkanlar": 0,
                     "shubhali_holatlar": 0,
