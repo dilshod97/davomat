@@ -159,7 +159,7 @@ class ReportView(APIView):
             if isinstance(end_date, str):
                 end_date = date.fromisoformat(end_date)
 
-            users = User.objects.select_related("sector").order_by("sector__ordering")
+            users = User.objects.select_related("sector").order_by("sector__ordering", "position")
 
             attendances = (
                 Attendance.objects
@@ -229,7 +229,7 @@ class ReportView(APIView):
                 }
             })
         else:
-            users = User.objects.select_related("sector").order_by("sector__ordering")
+            users = User.objects.select_related("sector").order_by("sector__ordering", "position")
 
             # Attendance yozuvlarini oxirgi bo'yicha olish
             attendances = (
