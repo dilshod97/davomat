@@ -268,15 +268,31 @@ class ReportView(APIView):
                     }
 
                 rec = attendance_map.get(u.id)
-                if not rec:
-                    continue
 
                 work = ""
-                for i, data in enumerate(rec.task.all()):
-                    work += f"{i + 1}. {data.task}\n"
+                entered = None
+                unix_time = None
+                event = None
+                latitude = None
+                longitude = None
+                rec_id = None
+
+                if rec:
+                    rec_id = str(rec.id)
+
+                    for i, data in enumerate(rec.task.all()):
+                        work += f"{i + 1}. {data.task}\n"
+
+                    entered = rec.timestamp.strftime("%H:%M") if rec.timestamp else None
+                    unix_time = int(rec.created_at.timestamp())
+                    event = d.get(rec.task_description)
+                    latitude = rec.latitude
+                    longitude = rec.longitude
+
                 full_name = f"{u.first_name} {getattr(u, 'middle_name', '')} {u.last_name}".strip()
+
                 member = {
-                    "_id": str(rec.id),
+                    "_id": rec_id,
                     "uimage": getattr(u, "img", "") or "",
                     "fname": full_name,
                     "pname": getattr(u, "lavozim", ""),
@@ -285,14 +301,14 @@ class ReportView(APIView):
                         "tablet": getattr(u, "extra_phone", ""),
                         "mobile": getattr(u, "mobile_phone", "")
                     },
-                    "entered": rec.timestamp.strftime("%H:%M") if rec.timestamp else None,
-                    "unix_time": int(rec.created_at.timestamp()),
-                    "event": d.get(rec.task_description),
+                    "entered": entered,
+                    "unix_time": unix_time,
+                    "event": event,
                     "works": work,
                     "location": {
                         "coordinates": {
-                            "latitude": rec.latitude,
-                            "longitude": rec.longitude
+                            "latitude": latitude,
+                            "longitude": longitude
                         },
                         "reason": None,
                         "address": None
