@@ -5,9 +5,7 @@ from django.contrib.auth.models import AbstractUser
 class Sector(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=512)
-    ministries = models.TextField(null=True)
-    profiles = models.TextField(null=True)
-    one_profiles = models.TextField(null=True)
+    ordering = models.IntegerField(default=0, null=True)
     created_at = models.DateTimeField(auto_now=True, null=True)
 
     def __str__(self):

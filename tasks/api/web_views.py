@@ -159,7 +159,7 @@ class ReportView(APIView):
             if isinstance(end_date, str):
                 end_date = date.fromisoformat(end_date)
 
-            users = User.objects.select_related("sector")
+            users = User.objects.select_related("sector").order_by("sector__ordering")
 
             attendances = (
                 Attendance.objects
@@ -229,7 +229,7 @@ class ReportView(APIView):
                 }
             })
         else:
-            users = User.objects.select_related("sector")
+            users = User.objects.select_related("sector").order_by("sector__ordering")
 
             # Attendance yozuvlarini oxirgi bo'yicha olish
             attendances = (
@@ -277,7 +277,7 @@ class ReportView(APIView):
                 full_name = f"{u.first_name} {getattr(u, 'middle_name', '')} {u.last_name}".strip()
                 member = {
                     "_id": str(rec.id),
-                    "uimage": getattr(u, "image", "") or "",
+                    "uimage": getattr(u, "img", "") or "",
                     "fname": full_name,
                     "pname": getattr(u, "lavozim", ""),
                     "contacts": {
