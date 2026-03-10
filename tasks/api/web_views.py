@@ -11,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from datetime import datetime, time
 from ..models import Attendance, Task, Distance
 import requests
+from rest_framework import status
 
 BOT_TOKEN = "7988185659:AAHkp0AnenS5_P674Tkf47baNJ3uM3azwRU"
 BOT_API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendDocument"
@@ -326,3 +327,77 @@ class ReportView(APIView):
                 "message": None,
                 "results": results
             })
+
+
+class LocationDetail(APIView):
+    permission_classes = [HasPermissionToAPI]
+    authentication_classes = [AuthRemoteChecking]
+
+    def get(self, request):
+        latitude = request.query_params.get("latitude")
+        longitude = request.query_params.get("longitude")
+
+        geo_server = "http://195.158.23.66:5000"
+        if not latitude or not longitude:
+            return Response(
+                {
+                    "isOk": False,
+                    "message": "latitude va longitude majburiy",
+                    "results": []
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            lat = float(latitude)
+            lon = float(longitude)
+        except ValueError:
+            return Response(
+                {
+                    "isOk": False,
+                    "message": "latitude yoki longitude noto'g'ri formatda",
+                    "results": []
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        url = f"{geo_server}/nearest/v1/driving/{lon},{lat}"
+
+        try:
+            response = requests.get(
+                url,
+                params={"number": 3},
+                timeout=5
+            )
+            response.raise_for_status()
+
+            data = response.json()
+
+        except requests.RequestException as e:
+            return Response(
+                {
+                    "isOk": False,
+                    "message": "Geo server bilan bog'lanishda xatolik",
+                    "results": []
+                },
+                status=status.HTTP_502_BAD_GATEWAY
+            )
+
+        waypoints = data.get("waypoints", [])
+
+        results = [
+            {
+                "distance": w.get("distance"),
+                "name": w.get("name"),
+                "location": w.get("location")
+            }
+            for w in waypoints
+        ]
+
+        return Response(
+            {
+                "isOk": True,
+                "message": None,
+                "results": results
+            }
+        )
