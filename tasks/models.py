@@ -72,6 +72,7 @@ class Attendance(models.Model):
     task = models.ManyToManyField(Task)
     task_description = models.TextField(blank=True, null=True)
     description = models.TextField(blank=True, null=True)
+    street_name = models.TextField(null=True)
     timestamp = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
 

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from ..models import Task, Attendance, Region, District, MinistryTree, NewsMedia, News, Reminder, Distance
-import math
+import math, requests
 
 
 def haversine(lat1, lon1, lat2, lon2):
@@ -116,6 +116,25 @@ class AttendanceSerializer(serializers.ModelSerializer):
                     Distance.objects.create(attendance=attendance, distance=distance)
 
         attendance.task.set(tasks)
+        street_name = ""
+        try:
+            geo_server = "http://195.158.23.66:5000"
+            longitude = attendance.longitude
+            latitude = attendance.latitude
+            url = f"{geo_server}/nearest/v1/driving/{longitude},{latitude}"
+            params = {
+                "number": 3
+            }
+            response = requests.get(url, params=params)
+
+            data = response.json()
+            for i in data['waypoints']:
+                if i['name'] not in street_name:
+                    street_name = street_name + ' ' + i['name']
+        except:
+            pass
+        attendance.street_name = street_name
+        attendance.save()
         return attendance
 
 

@@ -117,7 +117,7 @@ class SummaryReportView(APIView):
                 },
                 "location": {
                     "reason": None,
-                    "address": None
+                    "address": rec.street_name
                 },
                 "_id": str(rec.id),
                 "entered_at": rec.timestamp.strftime("%H:%M") if rec.timestamp else None,
@@ -276,6 +276,7 @@ class ReportView(APIView):
                 latitude = None
                 longitude = None
                 rec_id = None
+                street_name = None
 
                 if rec:
                     rec_id = str(rec.id)
@@ -288,6 +289,7 @@ class ReportView(APIView):
                     event = d.get(rec.task_description)
                     latitude = rec.latitude
                     longitude = rec.longitude
+                    street_name = rec.street_name
 
                 full_name = f"{u.first_name} {getattr(u, 'middle_name', '')} {u.last_name}".strip()
 
@@ -311,7 +313,7 @@ class ReportView(APIView):
                             "longitude": longitude
                         },
                         "reason": None,
-                        "address": None
+                        "address": street_name
                     }
                 }
 
