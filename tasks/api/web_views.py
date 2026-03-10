@@ -152,8 +152,17 @@ class ReportView(APIView):
 
     def post(self, request):
         info_type = request.data.get("info_type", "attendance")
-        start_date = request.data.get("start_date", date.today())
+        start_date = request.data.get("start_date")
         end_date = request.data.get("end_date")
+
+        if start_date:
+            start_date = datetime.fromtimestamp(int(start_date)).strftime("%Y-%m-%d")
+        else:
+            start_date = date.today()
+
+        if end_date:
+            end_date = datetime.fromtimestamp(int(end_date)).strftime("%Y-%m-%d")
+
         if start_date and end_date:
             if isinstance(start_date, str):
                 start_date = date.fromisoformat(start_date)
