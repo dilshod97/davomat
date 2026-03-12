@@ -39,6 +39,8 @@ class SummaryReportView(APIView):
         attendances = (
             Attendance.objects
             .filter(user_id__in=user_ids, created_at__date=today, info_type=info_type)
+            .order_by("user_id", "-created_at")
+            .distinct("user_id")
             .select_related("user")
         )
 
