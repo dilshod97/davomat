@@ -158,12 +158,12 @@ class ReportView(APIView):
         end_date = request.data.get("end_date")
 
         if start_date:
-            start_date = datetime.fromtimestamp(start_date).strftime("%Y-%m-%d")
+            start_date = datetime.fromtimestamp(start_date).date()
         else:
             start_date = date.today()
 
         if end_date:
-            end_date = datetime.fromtimestamp(end_date).strftime("%Y-%m-%d")
+            end_date = datetime.fromtimestamp(end_date).date()
 
             users = User.objects.select_related("sector").order_by("sector__ordering", "position")
 
@@ -185,13 +185,7 @@ class ReportView(APIView):
 
             # Dates listi
             dates_list = []
-            if start_date:
-                start_date = datetime.fromtimestamp(start_date).date()
-            else:
-                start_date = date.today()
 
-            if end_date:
-                end_date = datetime.fromtimestamp(end_date).date()
             current_date = start_date
             while current_date <= end_date:
                 dates_list.append({
