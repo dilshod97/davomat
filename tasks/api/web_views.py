@@ -90,7 +90,7 @@ class SummaryReportView(APIView):
 
             rec = attendance_map.get(u.id)
 
-            full_name = f"{u.first_name} {getattr(u, 'middle_name', '')} {u.last_name}".strip()
+            full_name = f"{u.last_name} {u.first_name} {getattr(u, 'middle_name', '')}".strip()
 
             name = full_name
 
@@ -185,6 +185,13 @@ class ReportView(APIView):
 
             # Dates listi
             dates_list = []
+            if start_date:
+                start_date = datetime.fromtimestamp(start_date).date()
+            else:
+                start_date = date.today()
+
+            if end_date:
+                end_date = datetime.fromtimestamp(end_date).date()
             current_date = start_date
             while current_date <= end_date:
                 dates_list.append({
@@ -217,7 +224,7 @@ class ReportView(APIView):
                         "user": u.username,
                         "entered": entered
                     })
-                full_name = f"{u.first_name} {getattr(u, 'middle_name', '')} {u.last_name}".strip()
+                full_name = f"{u.last_name} {u.first_name} {getattr(u, 'middle_name', '')}".strip()
                 member = {
                     "user": u.username,
                     "name": full_name,
@@ -297,7 +304,7 @@ class ReportView(APIView):
                     longitude = rec.longitude
                     street_name = rec.street_name
 
-                full_name = f"{u.first_name} {getattr(u, 'middle_name', '')} {u.last_name}".strip()
+                full_name = f"{u.last_name} {u.first_name} {getattr(u, 'middle_name', '')}".strip()
 
                 member = {
                     "_id": rec_id,
