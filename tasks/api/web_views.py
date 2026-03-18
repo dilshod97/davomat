@@ -31,7 +31,7 @@ class SummaryReportView(APIView):
         info_type = request.query_params.get("info_type", "attendance")
         today = date.today()
 
-        users = User.objects.all()
+        users = User.objects.exclude(sector_id=13)
 
         user_ids = list(users.values_list("id", flat=True))
 
@@ -165,7 +165,7 @@ class ReportView(APIView):
         if end_date:
             end_date = datetime.fromtimestamp(end_date).date()
 
-            users = User.objects.select_related("sector").order_by("sector__ordering", "position")
+            users = User.objects.exclude(sector_id=13).select_related("sector").order_by("sector__ordering", "position")
 
             attendances = (
                 Attendance.objects
@@ -236,7 +236,7 @@ class ReportView(APIView):
                 }
             })
         else:
-            users = User.objects.select_related("sector").order_by("sector__ordering", "position")
+            users = User.objects.exclude(sector_id=13).select_related("sector").order_by("sector__ordering", "position")
 
             # Attendance yozuvlarini oxirgi bo'yicha olish
             attendances = (
