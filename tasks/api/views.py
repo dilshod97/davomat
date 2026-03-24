@@ -98,7 +98,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             BOT_API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
             payload = {
                 "chat_id": chat_id,
-                "text": " ",
+                "text": "⌛",
                 "reply_markup": json.dumps({
                     "remove_keyboard": True
                 })
