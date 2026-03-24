@@ -29,7 +29,7 @@ def webapp_button(user):
         inline_keyboard=[
             [InlineKeyboardButton(
                 text="📋 Давоматни киритиш",
-                web_app=WebAppInfo(url=f"https://davomat-dev.netlify.app/?token={generate_simplejwt_token(user)}")  # <-- Web App URL
+                web_app=WebAppInfo(url=f"https://attendance.masofaviyaudit.uz/?token={generate_simplejwt_token(user)}")  # <-- Web App URL
             )]
         ]
     )

@@ -115,7 +115,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                             {
                                 "text": "📋 Давоматни киритиш",
                                 "web_app": {
-                                    "url": f"https://davomat-dev.netlify.app/?token={generate_simplejwt_token(self.request.user)}"
+                                    "url": f"https://attendance.masofaviyaudit.uz/?token={generate_simplejwt_token(self.request.user)}"
                                 }
                             }
                         ]

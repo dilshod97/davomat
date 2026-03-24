@@ -61,7 +61,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
-    "https://dwebapp.masofaviyaudit.uz", "https://davomat-dev.netlify.app/"
+    "https://dwebapp.masofaviyaudit.uz", "https://attendance.masofaviyaudit.uz/"
 ]
 TEMPLATES = [
     {
@@ -100,6 +100,13 @@ DATABASES = {
         },
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
