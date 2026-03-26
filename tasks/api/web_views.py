@@ -343,7 +343,7 @@ class LocationDetail(APIView):
         latitude = request.query_params.get("latitude")
         longitude = request.query_params.get("longitude")
 
-        geo_server = "http://195.158.23.66:5000"
+        geo_server = "http://195.158.15.155:5000"
         if not latitude or not longitude:
             return Response(
                 {

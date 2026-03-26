@@ -118,7 +118,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
         attendance.task.set(tasks)
         street_name = ""
         try:
-            geo_server = "http://195.158.23.66:5000"
+            geo_server = "http://195.158.15.155:5000"
             longitude = attendance.longitude
             latitude = attendance.latitude
             url = f"{geo_server}/nearest/v1/driving/{longitude},{latitude}"
