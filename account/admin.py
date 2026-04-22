@@ -96,8 +96,8 @@ class UserAdmin(BaseUserAdmin):
                 'sector', 'lavozim', 'as_user', 'position'
             )
         }),
-        ('Ruxsatlar', {'fields': ('is_active')}),
-        ('Muhim vaqtlar', {'fields': ('date_joined')}),
+        ('Ruxsatlar', {'fields': ('is_active',)}),
+        ('Muhim vaqtlar', {'fields': ('date_joined',)}),
     )
 
     list_display = ('username', 'first_name', 'last_name', 'phone', 'sector')
