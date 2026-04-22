@@ -87,18 +87,17 @@ class UserAdmin(BaseUserAdmin):
         (None, {'fields': ('username', 'password')}),
         ('Shaxsiy maʼlumotlar', {
             'fields': (
-                'first_name', 'last_name', 'middle_name', 'birth_date', 'pinfl',
-                'phone', 'chat_id', 'img'
+                'first_name', 'last_name', 'middle_name', 'pinfl',
+                'phone', 'img', 'extra_phone'
             )
         }),
         ('Tashkiliy', {
             'fields': (
-                'sector', 'organization', 'lavozim', 'profiles', 'my_mehnat_inn',
-                'as_user', 'is_admin', 'position', 'sector_leader'
+                'sector', 'lavozim', 'as_user', 'position'
             )
         }),
-        ('Ruxsatlar', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
-        ('Muhim vaqtlar', {'fields': ('last_login', 'date_joined')}),
+        ('Ruxsatlar', {'fields': ('is_active')}),
+        ('Muhim vaqtlar', {'fields': ('date_joined')}),
     )
 
     list_display = ('username', 'first_name', 'last_name', 'phone', 'sector', 'is_staff', 'is_superuser')
