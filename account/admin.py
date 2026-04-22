@@ -100,8 +100,8 @@ class UserAdmin(BaseUserAdmin):
         ('Muhim vaqtlar', {'fields': ('date_joined')}),
     )
 
-    list_display = ('username', 'first_name', 'last_name', 'phone', 'sector', 'is_staff', 'is_superuser')
-    list_filter = ('is_staff', 'is_superuser', 'is_active', 'sector')
+    list_display = ('username', 'first_name', 'last_name', 'phone', 'sector')
+    list_filter = ('is_active', 'sector')
     search_fields = ('username', 'first_name', 'last_name', 'phone', 'pinfl')
 
     add_fieldsets = (
