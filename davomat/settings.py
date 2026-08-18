@@ -92,7 +92,8 @@ DATABASES = {
         'PASSWORD': 'Qaz!2#$%^7',
         'HOST': '192.168.1.8',
         'PORT': 5432,
-        'CONN_MAX_AGE': 36000,
+        'CONN_MAX_AGE': 600,
+        'CONN_HEALTH_CHECKS': True,
         'OPTIONS': {
             'connect_timeout': 60,  # Ulanish uchun vaqtni 20 soniyaga sozlash
             'sslmode': 'disable',  # disable SSL connection

@@ -1,7 +1,7 @@
 from aiogram import Router, F
 from aiogram.types import Message, Contact
-from asgiref.sync import sync_to_async
 from account.models import User
+from bot.db import db_sync_to_async
 import re
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
@@ -38,12 +38,12 @@ def webapp_button(user):
 router = Router()
 
 
-@sync_to_async
+@db_sync_to_async
 def get_user_by_telegram_id(telegram_id):
     return User.objects.filter(chat_id=telegram_id).first()
 
 
-@sync_to_async
+@db_sync_to_async
 def get_user_by_phone(phone):
     digits = re.sub(r'\D', '', phone)
 
@@ -55,7 +55,7 @@ def get_user_by_phone(phone):
     return User.objects.filter(phone__icontains=phone).first()
 
 
-@sync_to_async
+@db_sync_to_async
 def attach_telegram_id(user, telegram_id):
     user.chat_id = telegram_id
     user.save()
