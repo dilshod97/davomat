@@ -18,6 +18,7 @@ from .report_utils import (
     DAILY_HEADERS,
     ReportScopeError,
     build_daily_report,
+    daily_excel_row,
     resolve_scope_users,
 )
 
@@ -67,7 +68,7 @@ class BasicDailyReportView(APIView):
         ws.append(DAILY_HEADERS)
 
         for row in data:
-            ws.append(list(row.values()))
+            ws.append(daily_excel_row(row))
 
         stream = io.BytesIO()
         wb.save(stream)

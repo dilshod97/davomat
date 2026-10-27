@@ -4,18 +4,43 @@ from account.models import User
 
 from ..models import Attendance, Distance
 
-DAILY_HEADERS = [
-    "Ходим",
-    "Лавозими",
-    "Келган вақт",
-    "Тизим вақти",
-    "Масофа",
-    "Ҳолат",
-    "Амалга оширадиган ишлари",
-    "Қаердалиги",
-    "Изоҳ",
-    "Жойлашув",
+# Excel ustunlari: kalit -> sarlavha, tartib muhim.
+DAILY_EXCEL_FIELDS = [
+    ("user", "Ходим"),
+    ("position", "Лавозими"),
+    ("entered_time", "Келган вақт"),
+    ("system_time", "Тизим вақти"),
+    ("distance", "Масофа"),
+    ("status", "Ҳолат"),
+    ("tasks", "Амалга оширадиган ишлари"),
+    ("where_is_it", "Қаердалиги"),
+    ("description", "Изоҳ"),
+    ("location", "Жойлашув"),
+    ("username", "Логин"),
+    ("phone", "Телефон"),
+    ("pinfl", "ЖШШИР (ПИНФЛ)"),
 ]
+
+DAILY_HEADERS = [header for _, header in DAILY_EXCEL_FIELDS]
+
+
+def daily_excel_row(row):
+    """Hisobot qatorini Excel ustunlari tartibida ro'yxatga aylantiradi."""
+    return [row.get(key, "") for key, _ in DAILY_EXCEL_FIELDS]
+
+
+def _clean(value):
+    """Bo'sh yoki model default'i ("0") bo'lsa "-" qaytaradi."""
+    value = (str(value) if value is not None else "").strip()
+    return value if value and value != "0" else "-"
+
+
+def _user_identity(user):
+    return {
+        "username": _clean(user.username),
+        "phone": _clean(getattr(user, "phone", "")),
+        "pinfl": _clean(getattr(user, "pinfl", "")),
+    }
 
 
 class ReportScopeError(Exception):
@@ -42,6 +67,7 @@ def _empty_row(user):
     return {
         "user": user.get_full_name() if hasattr(user, "get_full_name") else str(user),
         "position": getattr(user, "lavozim", "-"),
+        **_user_identity(user),
         "entered_time": "-",
         "system_time": "-",
         "distance": "-",
@@ -87,6 +113,7 @@ def build_daily_report(users, day_obj, info_type="attendance"):
         data.append({
             "user": user.get_full_name() if hasattr(user, "get_full_name") else str(user),
             "position": getattr(user, "lavozim", "-"),
+            **_user_identity(user),
             "entered_time": rec.timestamp.strftime("%Y-%m-%d %H:%M") if rec.timestamp else "-",
             "system_time": rec.created_at.strftime("%Y-%m-%d %H:%M"),
             "distance": f"{rec.distance} м" if getattr(rec, "distance", None) else "-",

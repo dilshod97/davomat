@@ -14,6 +14,7 @@ from .report_utils import (
     DAILY_HEADERS,
     ReportScopeError,
     build_daily_report,
+    daily_excel_row,
     resolve_scope_users,
 )
 import requests
@@ -53,7 +54,7 @@ class DailyReportView(APIView):
             ws.append(DAILY_HEADERS)
 
             for row in data:
-                ws.append(list(row.values()))
+                ws.append(daily_excel_row(row))
 
             file_stream = io.BytesIO()
             wb.save(file_stream)
