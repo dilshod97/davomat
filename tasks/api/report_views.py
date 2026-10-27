@@ -10,6 +10,12 @@ from account.models import User
 from rest_framework.permissions import IsAuthenticated
 from datetime import datetime, time
 from ..models import Attendance, Task, Distance
+from .report_utils import (
+    DAILY_HEADERS,
+    ReportScopeError,
+    build_daily_report,
+    resolve_scope_users,
+)
 import requests
 
 BOT_TOKEN = "7988185659:AAHkp0AnenS5_P674Tkf47baNJ3uM3azwRU"
@@ -32,93 +38,19 @@ class DailyReportView(APIView):
         except ValueError:
             return Response({"error": "Сана формати нотўғри. Масалан: 2025-10-20"}, status=400)
 
-        user = request.user
+        try:
+            all_users = resolve_scope_users(request.user)
+        except ReportScopeError as exc:
+            return Response({"error": str(exc)}, status=400)
 
-        if user.as_user == 0:
-            all_users = User.objects.filter(id=user.id)
-        elif user.as_user == 1:
-            if user.sector_id:
-                all_users = User.objects.filter(sector_id=user.sector_id)
-            else:
-                return Response({"error": "Foydalanuvchi sektorga biriktirilmagan."}, status=400)
-        elif user.as_user == 2:
-            all_users = User.objects.all()
-
-        else:
-            return Response({"error": "as_user noto‘g‘ri qiymatga ega."}, status=400)
-
-        data = []
-
-        for user in all_users:
-            rec = Attendance.objects.filter(
-                user=user, created_at__date=day_obj, info_type=info_type
-            ).order_by("-created_at").first()
-
-            if rec:
-                izoh = rec.task_description or ""
-                holat = ""
-
-                if not rec.timestamp:
-                    holat = "Давомат киритмади"
-                else:
-                    if rec.created_at.time() > time(9, 0):
-                        holat = "Кечикди"
-                    else:
-                        holat = "Ўз вақтида келди"
-
-                    distance = Distance.objects.filter(attendance=rec)
-
-                    other_address = False
-
-                    for i in distance:
-                        if i.distance > 1000:
-                            other_address = True
-
-                    if other_address:
-                        holat = "Шубҳали (жой узоқ)"
-                        izoh += " | Киритилган локация ва объект ўртасидаги масофа катта."
-
-                tasks = list(rec.task.values_list("task", flat=True))
-                if tasks:
-                    task_list = "\n".join([f"{i + 1}. {t}" for i, t in enumerate(tasks)])
-                else:
-                    task_list = "-"
-
-                data.append({
-                    "user": user.get_full_name() if hasattr(user, "get_full_name") else str(user),
-                    "position": getattr(user, "lavozim", "-"),
-                    "entered_time": rec.timestamp.strftime("%Y-%m-%d %H:%M") if rec.timestamp else "-",
-                    "system_time": rec.created_at.strftime("%Y-%m-%d %H:%M"),
-                    "distance": f"{rec.distance} м" if hasattr(rec, "distance") and rec.distance else "-",
-                    "status": holat,
-                    "tasks": task_list,
-                    "where_is_it": rec.task_description,
-                    "description": izoh if info_type == "attendance" else rec.description,
-                    "location": f"https://yandex.com/maps/?pt={rec.longitude},{rec.latitude}&z=16&l=map"
-                })
-            else:
-                # 🔹 Agar user bu kunga hech narsa kiritmagan bo‘lsa
-                data.append({
-                    "user": user.get_full_name() if hasattr(user, "get_full_name") else str(user),
-                    "position": getattr(user, "lavozim", "-"),
-                    "entered_time": "-",
-                    "system_time": "-",
-                    "distance": "-",
-                    "status": "Давомат киритмади",
-                    "tasks": '',
-                    "where_is_it": "-",
-                    "description": "",
-                    "location" : ""
-                })
+        data = build_daily_report(all_users, day_obj, info_type)
 
         # 🔹 Excel shaklda chiqarish
         if is_excel:
             wb = Workbook()
             ws = wb.active
             ws.title = "Кунлик ҳисобот"
-
-            headers = ["Ходим", "Лавозими", "Келган вақт", "Тизим вақти", "Масофа", "Ҳолат", "Амалга оширадиган ишлари", "Қаердалиги", "Изоҳ", "Жойлашув"]
-            ws.append(headers)
+            ws.append(DAILY_HEADERS)
 
             for row in data:
                 ws.append(list(row.values()))

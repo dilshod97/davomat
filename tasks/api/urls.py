@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (TaskViewSet, AttendanceViewSet, RegionListAPIView, DistrictListAPIView, MinistryTreeListAPIView,
                     LastAttendanceView, ReminderViewSet, NewsViewSet, NewsMediaViewSet)
 from .report_views import DailyReportView, PeriodReportView, BandlikHisobotAPIView
+from .basic_views import BasicDailyReportView
 
 router = DefaultRouter()
 router.register(r'tasks', TaskViewSet, basename='task')
@@ -20,5 +21,6 @@ urlpatterns = [
     path('daily-report/', DailyReportView.as_view(), name='DailyReportView'),
     path('period-report/', PeriodReportView.as_view(), name='PeriodReportView'),
     path('day-bandlik/', BandlikHisobotAPIView.as_view(), name='BandlikHisobotAPIView'),
+    path('basic/daily-report/', BasicDailyReportView.as_view(), name='BasicDailyReportView'),
 
 ]
