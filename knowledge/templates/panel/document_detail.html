@@ -1,0 +1,200 @@
+{% extends "panel/base.html" %}
+{% block title %}{{ doc.title }} — Билим панели{% endblock %}
+{% block content %}
+<div class="topbar">
+    <div>
+        <a href="/panel/" class="back">← Орқага</a>
+        <h1 style="margin-top:12px">Ҳужжатни таҳрирлаш</h1>
+    </div>
+    <div class="right">
+        <a href="/panel/documents/{{ doc.id }}/stats/" class="btn ghost">📈 Статистика</a>
+        <button class="btn" id="analyzeBtn" onclick="analyze()">🤖 AI таҳлил</button>
+        <button class="btn primary" onclick="save()">💾 Сақлаш</button>
+        <button class="btn green" id="publishBtn" onclick="publish()">📣 Юбориш</button>
+    </div>
+</div>
+
+<div class="grid" style="grid-template-columns:1fr 320px;align-items:start">
+    <!-- CHAP: asosiy -->
+    <div class="grid" style="gap:16px">
+        <div class="card">
+            <label class="field" style="margin-bottom:0"><span class="lbl">Сарлавҳа</span>
+                <input type="text" id="title" value="{{ doc.title }}"></label>
+        </div>
+
+        <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                <b>Асосий мазмун (AI)</b>
+                <span class="muted" style="font-size:12px">маркдаун</span>
+            </div>
+            <textarea id="summary" rows="7" placeholder="AI таҳлилдан сўнг шу ерда пайдо бўлади…">{{ doc.summary }}</textarea>
+        </div>
+
+        <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <b>Тест саволлари (<span id="qCount">0</span>)</b>
+                <button class="btn ghost" onclick="addQuestion()">+ Савол қўшиш</button>
+            </div>
+            <div id="questions"></div>
+        </div>
+    </div>
+
+    <!-- O'NG: sozlama + kimga -->
+    <div class="grid" style="gap:16px">
+        <div class="card">
+            <div class="muted" style="font-size:12px;margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px">Ҳолат</div>
+            {% if doc.status == "published" %}<span class="badge green">Юборилган</span>
+            {% elif doc.status == "generated" %}<span class="badge accent">Тайёр</span>
+            {% else %}<span class="badge amber">Қоралама</span>{% endif %}
+            <label class="field" style="margin:14px 0 0"><span class="lbl">Ўтиш чегараси (%)</span>
+                <input type="number" id="threshold" value="{{ doc.pass_threshold }}" min="0" max="100"></label>
+        </div>
+
+        <div class="card">
+            <div class="section-label">Муқова расм (ботда)</div>
+            {% if doc.cover_image %}
+            <img src="{{ doc.cover_image.url }}" alt="муқова"
+                 style="width:100%;border-radius:12px;margin-bottom:12px;display:block">
+            {% else %}
+            <div style="background:var(--bg2);border:1px dashed var(--border);border-radius:12px;
+                 padding:22px;text-align:center;color:var(--faint);font-size:13px;margin-bottom:12px">
+                Расм йўқ — ботда матнли хабар юборилади</div>
+            {% endif %}
+            <form method="post" enctype="multipart/form-data" action="/panel/documents/{{ doc.id }}/cover/">
+                {% csrf_token %}
+                <input type="file" name="cover_image" accept="image/*" style="margin-bottom:10px">
+                <button class="btn ghost" type="submit" style="width:100%;justify-content:center">⬆️ Расмни юклаш</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="muted" style="font-size:12px;margin-bottom:10px;text-transform:uppercase;letter-spacing:.4px">Кимга юборилади</div>
+            <label style="display:flex;gap:8px;align-items:center;margin-bottom:8px;cursor:pointer">
+                <input type="radio" name="tt" value="all" onchange="setTarget()" {% if doc.target_type == "all" %}checked{% endif %}> Барча ходимлар</label>
+            <label style="display:flex;gap:8px;align-items:center;margin-bottom:8px;cursor:pointer">
+                <input type="radio" name="tt" value="sector" onchange="setTarget()" {% if doc.target_type == "sector" %}checked{% endif %}> Шўъба бўйича</label>
+            <label style="display:flex;gap:8px;align-items:center;cursor:pointer">
+                <input type="radio" name="tt" value="users" onchange="setTarget()" {% if doc.target_type == "users" %}checked{% endif %}> Танланган ходимлар</label>
+
+            <div id="box_sector" style="display:none;margin-top:12px;max-height:220px;overflow:auto">
+                {% for s in sectors %}
+                <label style="display:flex;gap:8px;align-items:center;padding:5px 0;font-size:13.5px;cursor:pointer">
+                    <input type="checkbox" class="sec" value="{{ s.id }}" {% if s.id in selected_sectors %}checked{% endif %}> {{ s.name }}</label>
+                {% endfor %}
+            </div>
+
+            <div id="box_users" style="display:none;margin-top:12px">
+                <input type="text" placeholder="🔍 Ходим қидириш…" oninput="filterUsers(this.value)" style="margin-bottom:8px">
+                <div style="max-height:260px;overflow:auto" id="userList">
+                {% for u in users %}
+                    <label class="urow" style="display:flex;gap:8px;align-items:center;padding:5px 0;font-size:13.5px;cursor:pointer">
+                        <input type="checkbox" class="usr" value="{{ u.id }}" {% if u.id in selected_users %}checked{% endif %}>
+                        <span>{{ u.last_name }} {{ u.first_name }} {{ u.middle_name|default:"" }}</span></label>
+                {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+    const DOC_ID = {{ doc.id }};
+    let QUESTIONS = [
+        {% for q in questions %}
+        { text: "{{ q.text|escapejs }}", options: [
+            {% for o in q.options.all %}{ text: "{{ o.text|escapejs }}", is_correct: {{ o.is_correct|yesno:"true,false" }} },{% endfor %}
+        ]},
+        {% endfor %}
+    ];
+
+    function renderQuestions() {
+        const box = document.getElementById("questions");
+        document.getElementById("qCount").textContent = QUESTIONS.length;
+        box.innerHTML = "";
+        QUESTIONS.forEach((q, qi) => {
+            const div = document.createElement("div");
+            div.style.cssText = "border:1px solid var(--border);border-radius:11px;padding:14px;margin-bottom:12px";
+            let opts = q.options.map((o, oi) => `
+                <label style="display:flex;gap:9px;align-items:center;margin-bottom:7px">
+                    <input type="radio" name="correct_${qi}" ${o.is_correct ? "checked" : ""}
+                        onchange="setCorrect(${qi},${oi})">
+                    <input type="text" value="${esc(o.text)}" oninput="QUESTIONS[${qi}].options[${oi}].text=this.value"
+                        style="flex:1" placeholder="Вариант ${oi+1}">
+                    <span onclick="delOption(${qi},${oi})" style="cursor:pointer;color:var(--muted)">✕</span>
+                </label>`).join("");
+            div.innerHTML = `
+                <div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:10px">
+                    <span style="font-weight:700;color:var(--muted)">${qi+1}.</span>
+                    <textarea rows="2" style="flex:1" placeholder="Савол матни"
+                        oninput="QUESTIONS[${qi}].text=this.value">${esc(q.text)}</textarea>
+                    <span onclick="delQuestion(${qi})" style="cursor:pointer;color:var(--red)" title="Ўчириш">🗑</span>
+                </div>
+                ${opts}
+                <button class="btn ghost" style="padding:5px 10px;font-size:13px" onclick="addOption(${qi})">+ вариант</button>`;
+            box.appendChild(div);
+        });
+    }
+    function esc(s){ return String(s||"").replace(/"/g,"&quot;").replace(/</g,"&lt;"); }
+    function addQuestion(){ QUESTIONS.push({text:"",options:[{text:"",is_correct:true},{text:"",is_correct:false}]}); renderQuestions(); }
+    function delQuestion(i){ QUESTIONS.splice(i,1); renderQuestions(); }
+    function addOption(qi){ QUESTIONS[qi].options.push({text:"",is_correct:false}); renderQuestions(); }
+    function delOption(qi,oi){ QUESTIONS[qi].options.splice(oi,1); renderQuestions(); }
+    function setCorrect(qi,oi){ QUESTIONS[qi].options.forEach((o,i)=>o.is_correct=(i===oi)); }
+
+    function setTarget(){
+        const v = document.querySelector('input[name=tt]:checked').value;
+        document.getElementById("box_sector").style.display = v==="sector" ? "block":"none";
+        document.getElementById("box_users").style.display = v==="users" ? "block":"none";
+    }
+    function filterUsers(q){ q=q.toLowerCase();
+        document.querySelectorAll("#userList .urow").forEach(r=>{
+            r.style.display = r.textContent.toLowerCase().includes(q) ? "flex":"none"; }); }
+
+    function payload(){
+        return {
+            title: document.getElementById("title").value,
+            summary: document.getElementById("summary").value,
+            pass_threshold: +document.getElementById("threshold").value,
+            target_type: document.querySelector('input[name=tt]:checked').value,
+            sector_ids: [...document.querySelectorAll(".sec:checked")].map(c=>+c.value),
+            user_ids: [...document.querySelectorAll(".usr:checked")].map(c=>+c.value),
+            questions: QUESTIONS,
+        };
+    }
+    async function post(url, body){
+        const res = await fetch(url, { method:"POST",
+            headers:{ "Content-Type":"application/json", "X-CSRFToken": CSRF },
+            body: body ? JSON.stringify(body) : null });
+        return res;
+    }
+    async function save(){
+        const res = await post(`/panel/documents/${DOC_ID}/save/`, payload());
+        toast(res.ok ? "✅ Сақланди" : "❌ Хатолик");
+    }
+    async function analyze(){
+        const btn = document.getElementById("analyzeBtn");
+        btn.disabled = true; btn.textContent = "🤖 Таҳлил қилинмоқда…";
+        try {
+            const fd = new FormData(); fd.append("n_questions","10");
+            const res = await fetch(`/panel/documents/${DOC_ID}/analyze/`,
+                { method:"POST", headers:{ "X-CSRFToken": CSRF }, body: fd });
+            const d = await res.json();
+            if (d.ok){ toast("✅ AI тайёрлади"); setTimeout(()=>location.reload(), 700); }
+            else { toast("❌ " + (d.error||"Хатолик")); }
+        } catch(e){ toast("❌ " + e.message); }
+        btn.disabled = false; btn.textContent = "🤖 AI таҳлил";
+    }
+    async function publish(){
+        if(!confirm("Ходимларга ботда юборилсинми?")) return;
+        await save();
+        const res = await post(`/panel/documents/${DOC_ID}/publish/`);
+        const d = await res.json();
+        if(d.ok){ toast(`✅ Юборилди: ${d.sent}/${d.total}`); setTimeout(()=>location.reload(),900); }
+        else { toast("❌ " + (d.error||"Хатолик")); }
+    }
+
+    renderQuestions(); setTarget();
+</script>
+{% endblock %}

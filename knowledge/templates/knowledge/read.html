@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ҳужжатни ўқиш</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
+    <style>
+        :root {
+            --bg: var(--tg-theme-bg-color, #ffffff);
+            --text: var(--tg-theme-text-color, #1a1a1a);
+            --hint: var(--tg-theme-hint-color, #888);
+            --card: var(--tg-theme-secondary-bg-color, #f4f4f7);
+            --accent: var(--tg-theme-button-color, #2ea6ff);
+            --accent-text: var(--tg-theme-button-text-color, #ffffff);
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            margin: 0; padding: 16px 16px 120px;
+            font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg); color: var(--text); line-height: 1.55;
+        }
+        h1 { font-size: 20px; margin: 0 0 4px; }
+        .badge { display: inline-block; font-size: 12px; color: var(--hint); margin-bottom: 16px; }
+        .card { background: var(--card); border-radius: 14px; padding: 16px; margin-bottom: 16px; }
+        .card h2 { font-size: 15px; margin: 0 0 10px; text-transform: uppercase; letter-spacing: .5px; color: var(--hint); }
+        .summary ul { padding-left: 20px; margin: 0; }
+        .summary li { margin-bottom: 8px; }
+        .full-text { white-space: pre-wrap; font-size: 14px; color: var(--text); max-height: 50vh; overflow-y: auto; }
+        .toggle { color: var(--accent); font-size: 14px; cursor: pointer; margin-top: 8px; display: inline-block; }
+        .footer {
+            position: fixed; left: 0; right: 0; bottom: 0; padding: 12px 16px;
+            background: var(--bg); border-top: 1px solid rgba(128,128,128,.15);
+            display: flex; gap: 10px;
+        }
+        button {
+            flex: 1; border: none; border-radius: 12px; padding: 14px;
+            font-size: 15px; font-weight: 600; cursor: pointer;
+            background: var(--accent); color: var(--accent-text);
+        }
+        button:disabled { opacity: .5; }
+        button.ghost { background: var(--card); color: var(--text); }
+        .status { text-align: center; color: var(--hint); padding: 40px 0; }
+        .passed { color: #1db954; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div id="app"><div class="status">Юкланмоқда…</div></div>
+
+    <div class="footer" id="footer" style="display:none">
+        <button class="ghost" id="readBtn">✅ Ўқиб бўлдим</button>
+        <button id="quizBtn">📝 Тестга ўтиш</button>
+    </div>
+
+    <script>
+        const TOKEN = "{{ token }}";
+        const DOC_ID = {{ document_id }};
+        const tg = window.Telegram ? window.Telegram.WebApp : null;
+        if (tg) { tg.ready(); tg.expand(); }
+
+        function headers() {
+            return { "Authorization": "Bearer " + TOKEN, "Content-Type": "application/json" };
+        }
+
+        async function load() {
+            try {
+                const res = await fetch(`/api/knowledge/documents/${DOC_ID}/`, { headers: headers() });
+                if (!res.ok) throw new Error((await res.json()).detail || "Хатолик");
+                const d = await res.json();
+                render(d);
+            } catch (e) {
+                document.getElementById("app").innerHTML =
+                    `<div class="status">❌ ${e.message}</div>`;
+            }
+        }
+
+        function render(d) {
+            const summaryHtml = d.summary ? marked.parse(d.summary) : "<i>Мазмун йўқ</i>";
+            const attempt = d.my_attempt;
+            let statusLine = "";
+            if (attempt && attempt.finished_at) {
+                statusLine = attempt.passed
+                    ? `<p class="passed">✅ Тестдан ўтгансиз — ${attempt.percent}%</p>`
+                    : `<p>Тест натижаси: ${attempt.percent}% (ўтиш: ${d.pass_threshold}%)</p>`;
+            }
+            document.getElementById("app").innerHTML = `
+                <h1>${d.title}</h1>
+                <span class="badge">${d.question_count} та савол • ўтиш чегараси ${d.pass_threshold}%</span>
+                ${statusLine}
+                <div class="card summary">
+                    <h2>Асосий мазмун</h2>
+                    <div>${summaryHtml}</div>
+                </div>
+                <div class="card">
+                    <h2>Тўлиқ матн</h2>
+                    <div class="full-text" id="ft" style="max-height:200px">${escapeHtml(d.full_text || "")}</div>
+                    <span class="toggle" id="toggle">Тўлиқ кўрсатиш ▾</span>
+                </div>`;
+            const ft = document.getElementById("ft");
+            const toggle = document.getElementById("toggle");
+            toggle.onclick = () => {
+                if (ft.style.maxHeight === "none") { ft.style.maxHeight = "200px"; toggle.textContent = "Тўлиқ кўрсатиш ▾"; }
+                else { ft.style.maxHeight = "none"; toggle.textContent = "Йиғиш ▴"; }
+            };
+            document.getElementById("footer").style.display = "flex";
+            document.getElementById("readBtn").onclick = markRead;
+            document.getElementById("quizBtn").onclick = () =>
+                location.href = `/knowledge/quiz/${DOC_ID}/?token=${TOKEN}`;
+        }
+
+        async function markRead() {
+            const btn = document.getElementById("readBtn");
+            btn.disabled = true;
+            try {
+                await fetch(`/api/knowledge/documents/${DOC_ID}/`, { method: "POST", headers: headers() });
+                btn.textContent = "✅ Белгиланди";
+            } catch (e) { btn.disabled = false; }
+        }
+
+        function escapeHtml(s) {
+            return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        load();
+    </script>
+</body>
+</html>
