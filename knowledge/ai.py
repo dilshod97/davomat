@@ -2,6 +2,7 @@
 
 import json
 import re
+import time
 
 import requests
 from django.conf import settings
@@ -90,7 +91,7 @@ def extract_text_from_url(url: str) -> str:
 # --------------------------------------------------------------------------- #
 #  GLM chaqirish
 # --------------------------------------------------------------------------- #
-def _chat(messages, temperature=0.3, max_tokens=6000) -> str:
+def _chat(messages, temperature=0.3, max_tokens=16000) -> str:
     try:
         resp = requests.post(
             settings.GLM_API_URL,
@@ -103,6 +104,9 @@ def _chat(messages, temperature=0.3, max_tokens=6000) -> str:
                 "messages": messages,
                 "temperature": temperature,
                 "max_tokens": max_tokens,
+                # GLM reasoning model: o'ylash yoqilsa butun token limiti
+                # reasoning_content ga ketib, content bo'sh qaytadi.
+                "thinking": {"type": "disabled"},
             },
             timeout=settings.GLM_TIMEOUT,
         )
@@ -112,9 +116,15 @@ def _chat(messages, temperature=0.3, max_tokens=6000) -> str:
 
     data = resp.json()
     try:
-        return data["choices"][0]["message"]["content"]
-    except (KeyError, IndexError) as exc:
+        choice = data["choices"][0]
+        content = choice["message"].get("content") or ""
+    except (KeyError, IndexError, AttributeError) as exc:
         raise AIError(f"GLM javobi kutilmagan formatda: {data}") from exc
+    if not content.strip():
+        raise AIError(
+            f"GLM bo'sh javob qaytardi (finish_reason={choice.get('finish_reason')})."
+        )
+    return content
 
 
 def _parse_json(content: str) -> dict:
@@ -132,9 +142,12 @@ def _parse_json(content: str) -> dict:
             content = content[start:end + 1]
 
     try:
-        return json.loads(content)
+        data = json.loads(content)
     except json.JSONDecodeError as exc:
         raise AIError(f"GLM JSON javobini o'qib bo'lmadi: {exc}") from exc
+    if not isinstance(data, dict):
+        raise AIError("GLM JSON javobi obyekt emas.")
+    return data
 
 
 SYSTEM_PROMPT = (
@@ -182,22 +195,35 @@ def generate_summary_and_questions(text: str, n_questions: int = 10) -> dict:
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": build_prompt(clipped, n_questions)},
     ]
-    content = _chat(messages)
-    data = _parse_json(content)
+    # Model ba'zan buzilgan JSON qaytaradi — vaqt yetsa qayta urinamiz
+    # (gunicorn timeout 300s, shuning uchun jami ~150s dan oshirmaymiz).
+    started = time.monotonic()
+    last_error = None
+    for _attempt in range(3):
+        if last_error and time.monotonic() - started > 150:
+            break
+        try:
+            data = _parse_json(_chat(messages))
+            cleaned = _clean_questions(data.get("questions") or [])
+            if not cleaned:
+                raise AIError("AI test savollarini qaytarmadi. Qayta urinib ko'ring.")
+            return {"summary": (data.get("summary") or "").strip(), "questions": cleaned}
+        except AIError as exc:
+            last_error = exc
+    raise last_error
 
-    # minimal validatsiya
-    questions = data.get("questions") or []
+
+def _clean_questions(questions) -> list:
+    """Minimal validatsiya: matnsiz yoki 2 tadan kam variantli savollar tashlanadi."""
     cleaned = []
     for q in questions:
+        if not isinstance(q, dict):
+            continue
         opts = q.get("options") or []
         if not q.get("text") or len(opts) < 2:
             continue
         ci = q.get("correct_index", 0)
         if not isinstance(ci, int) or ci < 0 or ci >= len(opts):
             ci = 0
-        cleaned.append({"text": q["text"].strip(), "options": [str(o).strip() for o in opts], "correct_index": ci})
-
-    if not cleaned:
-        raise AIError("AI test savollarini qaytarmadi. Qayta urinib ko'ring.")
-
-    return {"summary": (data.get("summary") or "").strip(), "questions": cleaned}
+        cleaned.append({"text": str(q["text"]).strip(), "options": [str(o).strip() for o in opts], "correct_index": ci})
+    return cleaned
