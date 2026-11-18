@@ -1,0 +1,24 @@
+{% extends "panel/base.html" %}
+{% block title %}Кириш — Билим панели{% endblock %}
+{% block content %}
+<div style="position:fixed;inset:0;background:
+     radial-gradient(1100px 500px at 15% -5%, var(--accent-weak), transparent 60%),
+     radial-gradient(900px 500px at 100% 100%, var(--blue-weak), transparent 55%), var(--bg);"></div>
+<div style="position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px">
+    <form method="post" class="card" style="width:360px;box-shadow:var(--shadow-lg)">
+        {% csrf_token %}
+        <div style="display:flex;align-items:center;gap:11px;margin-bottom:6px">
+            <span style="width:40px;height:40px;border-radius:12px;background:var(--grad);display:grid;
+                  place-items:center;font-size:20px;box-shadow:0 8px 20px -5px rgba(99,102,241,.6)">📚</span>
+            <span style="font-size:19px;font-weight:800">Билим панели</span>
+        </div>
+        <div class="muted" style="font-size:13px;margin:0 0 22px 51px">Масъул ходим кириши</div>
+        {% if error %}<div class="badge red" style="display:block;margin-bottom:14px;padding:10px">{{ error }}</div>{% endif %}
+        <label class="field"><span class="lbl">Логин</span>
+            <input type="text" name="username" autofocus required></label>
+        <label class="field"><span class="lbl">Парол</span>
+            <input type="password" name="password" required></label>
+        <button class="btn primary" style="width:100%;justify-content:center" type="submit">Кириш</button>
+    </form>
+</div>
+{% endblock %}

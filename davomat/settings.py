@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'account',
-    'tasks'
+    'tasks',
+    'knowledge',
 ]
 
 MIDDLEWARE = [
@@ -164,3 +165,22 @@ MEDIA_ROOT = BASE_DIR / "storage"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# --------------------------------------------------------------------------- #
+#  Telegram bot
+# --------------------------------------------------------------------------- #
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "7988185659:AAHkp0AnenS5_P674Tkf47baNJ3uM3azwRU")
+
+# knowledge WebApp (o'qish/test) sahifalari shu Django'da server qilinadi
+# (/knowledge/read/..., /knowledge/quiz/...). Telegram WebApp knopkalari uchun
+# shu Django public https manzili kerak (attendance.* emas — u alohida frontend).
+WEBAPP_BASE_URL = os.environ.get("WEBAPP_BASE_URL", "https://dwebapp.masofaviyaudit.uz")
+
+# --------------------------------------------------------------------------- #
+#  GLM (AI) — OpenAI-mos chat/completions
+# --------------------------------------------------------------------------- #
+GLM_API_URL = os.environ.get("GLM_API_URL", "https://api-llm.gpu.uz/v1/chat/completions")
+GLM_API_KEY = os.environ.get("GLM_API_KEY", "")  # .env orqali bering
+GLM_MODEL = os.environ.get("GLM_MODEL", "glm-5.2-private")
+GLM_TIMEOUT = int(os.environ.get("GLM_TIMEOUT", "180"))
+GLM_MAX_INPUT_CHARS = int(os.environ.get("GLM_MAX_INPUT_CHARS", "40000"))

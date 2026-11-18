@@ -1,0 +1,57 @@
+{% extends "panel/base.html" %}
+{% block title %}Статистика — {{ doc.title }}{% endblock %}
+{% block content %}
+<div class="topbar">
+    <div>
+        <a href="/panel/documents/{{ doc.id }}/" class="back">← Орқага</a>
+        <h1 style="margin-top:12px">Статистика</h1>
+        <div class="sub">{{ doc.title }}</div>
+    </div>
+</div>
+
+<div class="grid cards3" style="margin-bottom:16px">
+    <div class="card stat"><div class="chip i-blue">👥</div>
+        <div><div class="n">{{ summary.assigned }}</div><div class="l">Тайинланди</div></div></div>
+    <div class="card stat"><div class="chip i-green">✅</div>
+        <div><div class="n">{{ summary.passed }}</div><div class="l">Ўтди</div></div></div>
+    <div class="card stat"><div class="chip i-red">❌</div>
+        <div><div class="n">{{ summary.failed }}</div><div class="l">Йиқилди</div></div></div>
+</div>
+<div class="grid cards3" style="margin-bottom:22px">
+    <div class="card stat"><div class="chip i-indigo">📖</div>
+        <div><div class="n">{{ summary.read }}</div><div class="l">Ўқиди</div></div></div>
+    <div class="card stat"><div class="chip i-indigo">📊</div>
+        <div><div class="n">{{ summary.avg_percent }}%</div><div class="l">Ўртача натижа</div></div></div>
+    <div class="card stat"><div class="chip i-amber">⏳</div>
+        <div><div class="n">{{ summary.not_finished }}</div><div class="l">Топширмаган</div></div></div>
+</div>
+
+<div class="card" style="margin-bottom:18px">
+    <b style="display:block;margin-bottom:12px">Натижалар</b>
+    <table>
+        <thead><tr><th>Ходим</th><th>Ўқиди</th><th>Натижа</th><th>Ҳолат</th><th>Вақт</th></tr></thead>
+        <tbody>
+        {% for r in results %}
+            <tr>
+                <td>{{ r.name }}</td>
+                <td>{% if r.read_done %}✅{% else %}—{% endif %}</td>
+                <td>{{ r.score }}/{{ r.total }} ({{ r.percent }}%)</td>
+                <td>{% if r.passed %}<span class="badge green">Ўтди</span>{% else %}<span class="badge red">Йиқилди</span>{% endif %}</td>
+                <td class="muted" style="font-size:13px">{{ r.finished_at|date:"d.m.Y H:i" }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="5" class="muted" style="text-align:center;padding:30px">Ҳали ҳеч ким топширмаган.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if pending %}
+<div class="card">
+    <b style="display:block;margin-bottom:12px">Топширмаганлар ({{ pending|length }})</b>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+        {% for p in pending %}<span class="badge amber">{{ p.name }}</span>{% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

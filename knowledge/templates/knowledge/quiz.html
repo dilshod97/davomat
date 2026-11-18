@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Тест</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg: var(--tg-theme-bg-color, #ffffff);
+            --text: var(--tg-theme-text-color, #1a1a1a);
+            --hint: var(--tg-theme-hint-color, #888);
+            --card: var(--tg-theme-secondary-bg-color, #f4f4f7);
+            --accent: var(--tg-theme-button-color, #2ea6ff);
+            --accent-text: var(--tg-theme-button-text-color, #ffffff);
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            margin: 0; padding: 16px 16px 110px;
+            font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg); color: var(--text); line-height: 1.5;
+        }
+        h1 { font-size: 19px; margin: 0 0 16px; }
+        .q { background: var(--card); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+        .q-title { font-weight: 600; margin-bottom: 12px; }
+        .q-title span { color: var(--hint); font-weight: 400; }
+        .opt {
+            display: flex; align-items: center; gap: 10px; padding: 12px;
+            border-radius: 10px; margin-bottom: 8px; cursor: pointer;
+            border: 2px solid transparent; background: var(--bg);
+        }
+        .opt.sel { border-color: var(--accent); }
+        .opt input { accent-color: var(--accent); width: 18px; height: 18px; }
+        .opt.correct { border-color: #1db954; background: rgba(29,185,84,.08); }
+        .opt.wrong { border-color: #e53935; background: rgba(229,57,53,.08); }
+        .footer {
+            position: fixed; left: 0; right: 0; bottom: 0; padding: 12px 16px;
+            background: var(--bg); border-top: 1px solid rgba(128,128,128,.15);
+        }
+        button {
+            width: 100%; border: none; border-radius: 12px; padding: 14px;
+            font-size: 15px; font-weight: 600; cursor: pointer;
+            background: var(--accent); color: var(--accent-text);
+        }
+        button:disabled { opacity: .5; }
+        .status { text-align: center; color: var(--hint); padding: 40px 0; }
+        .result { text-align: center; padding: 30px 16px; }
+        .result .big { font-size: 42px; font-weight: 700; margin: 10px 0; }
+        .result .pass { color: #1db954; }
+        .result .fail { color: #e53935; }
+    </style>
+</head>
+<body>
+    <div id="app"><div class="status">Юкланмоқда…</div></div>
+    <div class="footer" id="footer" style="display:none">
+        <button id="submitBtn">Жавобларни юбориш</button>
+    </div>
+
+    <script>
+        const TOKEN = "{{ token }}";
+        const DOC_ID = {{ document_id }};
+        const tg = window.Telegram ? window.Telegram.WebApp : null;
+        if (tg) { tg.ready(); tg.expand(); }
+
+        let QUESTIONS = [];
+        let THRESHOLD = 70;
+        const selected = {};  // question_id -> option_id
+
+        function headers() {
+            return { "Authorization": "Bearer " + TOKEN, "Content-Type": "application/json" };
+        }
+
+        async function load() {
+            try {
+                const res = await fetch(`/api/knowledge/documents/${DOC_ID}/quiz/`, { headers: headers() });
+                if (!res.ok) throw new Error((await res.json()).detail || "Хатолик");
+                const d = await res.json();
+                QUESTIONS = d.questions;
+                THRESHOLD = d.pass_threshold;
+                renderQuiz(d.title);
+            } catch (e) {
+                document.getElementById("app").innerHTML = `<div class="status">❌ ${e.message}</div>`;
+            }
+        }
+
+        function renderQuiz(title) {
+            let html = `<h1>${title}</h1>`;
+            QUESTIONS.forEach((q, i) => {
+                html += `<div class="q" data-q="${q.id}">
+                    <div class="q-title"><span>${i + 1}/${QUESTIONS.length}.</span> ${escapeHtml(q.text)}</div>`;
+                q.options.forEach(o => {
+                    html += `<label class="opt" data-opt="${o.id}">
+                        <input type="radio" name="q${q.id}" value="${o.id}">
+                        <span>${escapeHtml(o.text)}</span></label>`;
+                });
+                html += `</div>`;
+            });
+            document.getElementById("app").innerHTML = html;
+            document.getElementById("footer").style.display = "block";
+
+            document.querySelectorAll(".opt").forEach(label => {
+                label.onclick = () => {
+                    const qid = +label.closest(".q").dataset.q;
+                    const oid = +label.dataset.opt;
+                    selected[qid] = oid;
+                    label.closest(".q").querySelectorAll(".opt").forEach(l => l.classList.remove("sel"));
+                    label.classList.add("sel");
+                };
+            });
+            document.getElementById("submitBtn").onclick = submit;
+        }
+
+        async function submit() {
+            if (Object.keys(selected).length < QUESTIONS.length) {
+                if (tg) tg.showAlert("Барча саволларга жавоб беринг.");
+                else alert("Барча саволларга жавоб беринг.");
+                return;
+            }
+            const btn = document.getElementById("submitBtn");
+            btn.disabled = true; btn.textContent = "Юборилмоқда…";
+            const answers = Object.entries(selected).map(([q, o]) => ({ question_id: +q, option_id: +o }));
+            try {
+                const res = await fetch(`/api/knowledge/documents/${DOC_ID}/submit/`, {
+                    method: "POST", headers: headers(), body: JSON.stringify({ answers })
+                });
+                if (!res.ok) throw new Error((await res.json()).detail || "Хатолик");
+                showResult(await res.json());
+            } catch (e) {
+                btn.disabled = false; btn.textContent = "Жавобларни юбориш";
+                if (tg) tg.showAlert(e.message);
+            }
+        }
+
+        function showResult(r) {
+            document.getElementById("footer").style.display = "none";
+            const cls = r.passed ? "pass" : "fail";
+            const icon = r.passed ? "✅" : "❌";
+            const msg = r.passed ? "Тестдан муваффақиятли ўтдингиз!" : "Афсуски, ўтиш чегарасига етмади.";
+            document.getElementById("app").innerHTML = `
+                <div class="result">
+                    <div>${icon}</div>
+                    <div class="big ${cls}">${r.percent}%</div>
+                    <p>${r.score} / ${r.total} тўғри жавоб</p>
+                    <p>${msg}</p>
+                    <p style="color:var(--hint)">Ўтиш чегараси: ${THRESHOLD}%</p>
+                </div>`;
+            if (tg) setTimeout(() => tg.close(), 4000);
+        }
+
+        function escapeHtml(s) {
+            return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        load();
+    </script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+{% extends "panel/base.html" %}
+{% block title %}Янги ҳужжат — Билим панели{% endblock %}
+{% block nav_new %}active{% endblock %}
+{% block content %}
+<div class="topbar">
+    <div>
+        <a href="/panel/" class="back">← Орқага</a>
+        <h1 style="margin-top:12px">Янги ҳужжат</h1>
+        <div class="sub">Word файл ёки lex.uz ҳавола орқали ҳужжат қўшинг</div>
+    </div>
+</div>
+
+<form method="post" enctype="multipart/form-data" class="card" style="max-width:720px">
+    {% csrf_token %}
+    <label class="field"><span class="lbl">Сарлавҳа *</span>
+        <input type="text" name="title" required placeholder="Масалан: Давлат хизматчилари этикаси тўғрисида Низом"></label>
+
+    <label class="field"><span class="lbl">Муқова расм (ихтиёрий — ботда чиройли кўринади)</span>
+        <input type="file" name="cover_image" accept="image/*"></label>
+
+    <div class="row">
+        <label class="field"><span class="lbl">Ҳужжат тури</span>
+            <select name="document_type">
+                {% for val, label in document_types %}<option value="{{ val }}">{{ label }}</option>{% endfor %}
+            </select></label>
+        <label class="field"><span class="lbl">Ўтиш чегараси (%)</span>
+            <input type="number" name="pass_threshold" value="70" min="0" max="100"></label>
+    </div>
+
+    <label class="field"><span class="lbl">Манба тури</span>
+        <select name="source_type" id="srcType" onchange="toggleSource()">
+            <option value="docx">Word файл (.docx)</option>
+            <option value="url">lex.uz ҳавола</option>
+            <option value="manual">Матнни қўлда киритиш</option>
+        </select></label>
+
+    <label class="field" id="f_file"><span class="lbl">Word файл</span>
+        <input type="file" name="source_file" accept=".docx"></label>
+    <label class="field" id="f_url" style="display:none"><span class="lbl">lex.uz ҳавола</span>
+        <input type="url" name="source_url" placeholder="https://lex.uz/docs/..."></label>
+    <label class="field" id="f_text" style="display:none"><span class="lbl">Матн</span>
+        <textarea name="full_text" rows="8" placeholder="Ҳужжат матнини шу ерга қўйинг"></textarea></label>
+
+    <div class="muted" style="font-size:13px;margin:6px 0 16px">
+        Сақлангандан сўнг кейинги саҳифада <b>«🤖 AI таҳлил»</b> тугмаси билан асосий мазмун ва тест тузилади.
+    </div>
+    <button class="btn primary" type="submit">Сақлаш ва давом этиш →</button>
+</form>
+
+<script>
+    function toggleSource() {
+        const v = document.getElementById("srcType").value;
+        document.getElementById("f_file").style.display = v === "docx" ? "block" : "none";
+        document.getElementById("f_url").style.display  = v === "url" ? "block" : "none";
+        document.getElementById("f_text").style.display = v === "manual" ? "block" : "none";
+    }
+    toggleSource();
+</script>
+{% endblock %}

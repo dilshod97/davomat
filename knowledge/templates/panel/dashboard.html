@@ -1,0 +1,54 @@
+{% extends "panel/base.html" %}
+{% block title %}Бош саҳифа — Билим панели{% endblock %}
+{% block nav_dash %}active{% endblock %}
+{% block content %}
+<div class="topbar">
+    <div>
+        <h1>Бош саҳифа</h1>
+        <div class="sub">Ҳужжатлар, тестлар ва ходимлар натижалари</div>
+    </div>
+    <div class="right">
+        <a href="/panel/documents/new/" class="btn primary">➕ Янги ҳужжат</a>
+    </div>
+</div>
+
+<div class="grid cards3" style="margin-bottom:22px">
+    <div class="card stat"><div class="chip i-indigo">📚</div>
+        <div><div class="n">{{ stats.total }}</div><div class="l">Жами ҳужжат</div></div></div>
+    <div class="card stat"><div class="chip i-green">📣</div>
+        <div><div class="n">{{ stats.published }}</div><div class="l">Юборилган</div></div></div>
+    <div class="card stat"><div class="chip i-amber">✏️</div>
+        <div><div class="n">{{ stats.draft }}</div><div class="l">Қоралама / тайёрланмоқда</div></div></div>
+</div>
+
+<div class="card">
+    <table>
+        <thead><tr>
+            <th>Ҳужжат</th><th>Ҳолат</th><th>Саволлар</th><th>Тайинланди</th><th>Ўтди</th><th></th>
+        </tr></thead>
+        <tbody>
+        {% for r in rows %}
+            <tr>
+                <td><a href="/panel/documents/{{ r.doc.id }}/" style="font-weight:600">{{ r.doc.title }}</a>
+                    <div class="muted" style="font-size:12px">{{ r.doc.get_document_type_display }}</div></td>
+                <td>
+                    {% if r.doc.status == "published" %}<span class="badge green">Юборилган</span>
+                    {% elif r.doc.status == "generated" %}<span class="badge accent">Тайёр</span>
+                    {% else %}<span class="badge amber">Қоралама</span>{% endif %}
+                </td>
+                <td>{{ r.doc.question_count }}</td>
+                <td>{{ r.assigned }}</td>
+                <td>{{ r.passed }} / {{ r.finished }}</td>
+                <td style="text-align:right">
+                    <a href="/panel/documents/{{ r.doc.id }}/stats/" class="btn ghost" style="padding:6px 11px">📈</a>
+                    <a href="/panel/documents/{{ r.doc.id }}/" class="btn ghost" style="padding:6px 11px">Очиш</a>
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="6" class="muted" style="text-align:center;padding:40px">Ҳали ҳужжат йўқ.
+                <a href="/panel/documents/new/" style="color:var(--accent)">Биринчисини қўшинг →</a></td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
