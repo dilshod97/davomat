@@ -177,6 +177,11 @@ BOT_TOKEN = os.environ.get("BOT_TOKEN", "7988185659:AAHkp0AnenS5_P674Tkf47baNJ3u
 WEBAPP_BASE_URL = os.environ.get("WEBAPP_BASE_URL", "https://dwebapp.masofaviyaudit.uz")
 
 # --------------------------------------------------------------------------- #
+#  OSRM — davomat koordinatasidan ko'cha nomini olish (/nearest)
+# --------------------------------------------------------------------------- #
+OSRM_URL = os.environ.get("OSRM_URL", "http://172.16.30.225:5000")
+
+# --------------------------------------------------------------------------- #
 #  GLM (AI) — OpenAI-mos chat/completions
 # --------------------------------------------------------------------------- #
 GLM_API_URL = os.environ.get("GLM_API_URL", "https://api-llm.gpu.uz/v1/chat/completions")

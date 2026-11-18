@@ -1,6 +1,10 @@
 from rest_framework import serializers
 from ..models import Task, Attendance, Region, District, MinistryTree, NewsMedia, News, Reminder, Distance
+import logging
 import math, requests
+from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 
 def haversine(lat1, lon1, lat2, lon2):
@@ -118,7 +122,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
         attendance.task.set(tasks)
         street_name = ""
         try:
-            geo_server = "http://195.158.15.155:5000"
+            geo_server = settings.OSRM_URL.rstrip("/")
             longitude = attendance.longitude
             latitude = attendance.latitude
             url = f"{geo_server}/nearest/v1/driving/{longitude},{latitude}"
@@ -131,8 +135,8 @@ class AttendanceSerializer(serializers.ModelSerializer):
             for i in data['waypoints']:
                 if i['name'] not in street_name:
                     street_name = street_name + ' ' + i['name']
-        except:
-            pass
+        except Exception as exc:
+            logger.warning("OSRM ko'cha nomini olib bo'lmadi (%s): %s", settings.OSRM_URL, exc)
         attendance.street_name = street_name
         attendance.save()
         return attendance

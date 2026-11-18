@@ -19,6 +19,17 @@ services:
       - .env
     environment:
       - TZ=Asia/Tashkent
+      - OSRM_URL=http://osrm:5000
+    depends_on:
+      - osrm
+    restart: always
+
+  # Ko'cha nomi uchun OSRM (xarita: deploy/osrm-prepare.sh bilan tayyorlanadi)
+  osrm:
+    image: ghcr.io/project-osrm/osrm-backend:v6.0.0
+    command: osrm-routed --algorithm mld /data/uzbekistan-latest.osrm
+    volumes:
+      - ../osrm-data:/data:ro
     restart: always
 
   bot:
